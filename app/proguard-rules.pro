@@ -1,0 +1,3 @@
+-dontwarn org.slf4j.**
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

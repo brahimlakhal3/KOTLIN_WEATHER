@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Météo</string>
+    <string name="app_tagline">Prévisions claires et élégantes</string>
+    <string name="attribution">Données Open-Meteo</string>
+    <string name="attribution_icons">Icônes météo : AmCharts · Home Assistant (MIT)</string>
+    <string name="menu">Ouvrir le menu</string>
+    <string name="back">Retour</string>
+    <string name="refresh">Actualiser</string>
+
+    <string name="screen_weather">Météo</string>
+    <string name="screen_search">Recherche</string>
+    <string name="screen_settings">Paramètres</string>
+    <string name="title_search">Ajouter une ville</string>
+
+    <string name="cities_empty_title">Aucune ville enregistrée</string>
+    <string name="cities_empty_hint">Ajoutez une ville pour suivre sa météo en un coup d\'œil.</string>
+    <string name="cities_add">Ajouter une ville</string>
+    <string name="cities_delete_title">Supprimer la ville ?</string>
+    <string name="cities_delete_text">%1$s sera retirée de votre liste.</string>
+    <string name="subtitle_region">%1$s · %2$s</string>
+
+    <string name="search_hint">Nom de la ville</string>
+    <string name="search_empty_title">Recherchez une ville</string>
+    <string name="search_empty_hint">Tapez au moins deux caractères pour lancer la recherche.</string>
+    <string name="search_no_result_title">Aucun résultat</string>
+    <string name="search_no_result_hint">Essayez un autre nom ou vérifiez l\'orthographe.</string>
+    <string name="search_clear">Effacer la recherche</string>
+    <string name="search_add">Ajouter</string>
+
+    <string name="section_hourly">Prochaines heures</string>
+    <string name="section_daily">Prévisions sur %1$d jours</string>
+    <string name="section_details">Détails</string>
+    <string name="hero_feels_like">Ressenti %1$s</string>
+    <string name="last_updated">Mis à jour à %1$s</string>
+    <string name="last_updated_unknown">En attente de synchronisation</string>
+    <string name="sun_times">Lever %1$s · Coucher %2$s</string>
+
+    <string name="metric_humidity">Humidité</string>
+    <string name="metric_temperature">Température</string>
+    <string name="metric_wind">Vent</string>
+    <string name="metric_gusts">Rafales</string>
+    <string name="metric_precipitation">Précipitations</string>
+    <string name="metric_visibility">Visibilité</string>
+    <string name="metric_dew_point">Point de rosée</string>
+    <string name="metric_uv_index">Indice UV</string>
+    <string name="metric_probability">Probabilité</string>
+    <string name="metric_feels_like">Ressenti</string>
+    <string name="day_min">Min %1$s</string>
+    <string name="day_max">Max %1$s</string>
+    <string name="day_min_max">Max %1$s · Min %2$s</string>
+    <string name="day_metric_low">Min %1$s à %2$s</string>
+    <string name="day_metric_high">Max %1$s à %2$s</string>
+    <string name="metric_day_mean">Moyenne du jour</string>
+    <string name="metric_day_max">Maximum du jour</string>
+    <string name="uv_level_low">Faible</string>
+    <string name="uv_level_moderate">Modéré</string>
+    <string name="uv_level_high">Élevé</string>
+    <string name="uv_level_very_high">Très élevé</string>
+    <string name="uv_level_extreme">Extrême</string>
+
+    <string name="unit_kmh">%1$s km/h</string>
+    <string name="unit_mph">%1$s mi/h</string>
+    <string name="unit_km">%1$s km</string>
+    <string name="unit_miles">%1$s mi</string>
+    <string name="unit_mm">%1$s mm</string>
+    <string name="unit_inches">%1$s po</string>
+    <string name="unit_temperature">%1$s°</string>
+    <string name="unit_percent">%1$d %%</string>
+
+    <string name="state_loading">Chargement des prévisions…</string>
+    <string name="state_error_title">Prévisions indisponibles</string>
+    <string name="state_error_hint">Vérifiez votre connexion puis réessayez.</string>
+    <string name="state_retry">Réessayer</string>
+    <string name="snack_error">Connexion impossible, données hors ligne affichées.</string>
+    <string name="snack_deleted">Ville supprimée</string>
+    <string name="snack_cache_cleared">Cache vidé</string>
+
+    <string name="settings_appearance">Apparence</string>
+    <string name="theme_system">Auto</string>
+    <string name="theme_very_light">Très clair</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_soft">Doux</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="theme_very_dark">Très sombre</string>
+    <string name="settings_text_size">Taille du texte</string>
+    <string name="text_size_small">Petit</string>
+    <string name="text_size_normal">Normal</string>
+    <string name="text_size_large">Grand</string>
+    <string name="settings_units">Unités</string>
+    <string name="units_metric">Métrique (°C)</string>
+    <string name="units_imperial">Impérial (°F)</string>
+    <string name="settings_language">Langue</string>
+    <string name="language_french">Français</string>
+    <string name="language_english">English</string>
+    <string name="settings_data">Données</string>
+    <string name="settings_cache_title">Prévisions enregistrées</string>
+    <string name="settings_cache_count">%1$d ville(s) suivie(s)</string>
+    <string name="settings_clear_cache">Vider le cache</string>
+    <string name="settings_clear_cache_title">Vider le cache météo ?</string>
+    <string name="settings_clear_cache_text">Les prévisions enregistrées seront supprimées. Elles seront téléchargées à nouveau.</string>
+    <string name="settings_about">À propos</string>
+    <string name="settings_about_text">Données météo fournies par Open-Meteo. Interface conçue avec Jetpack Compose.</string>
+    <string name="app_version">Version %1$s</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_clear">Vider</string>
+
+    <string name="condition_clear">Ciel dégagé</string>
+    <string name="condition_mainly_clear">Peu nuageux</string>
+    <string name="condition_partly_cloudy">Partiellement nuageux</string>
+    <string name="condition_overcast">Couvert</string>
+    <string name="condition_fog">Brouillard</string>
+    <string name="condition_drizzle">Bruine</string>
+    <string name="condition_freezing_drizzle">Bruine verglaçante</string>
+    <string name="condition_rain">Pluie</string>
+    <string name="condition_freezing_rain">Pluie verglaçante</string>
+    <string name="condition_snow">Neige</string>
+    <string name="condition_rain_showers">Averses de pluie</string>
+    <string name="condition_snow_showers">Averses de neige</string>
+    <string name="condition_thunderstorm">Orage</string>
+    <string name="condition_thunderstorm_hail">Orage avec grêle</string>
+    <string name="condition_unknown">Conditions inconnues</string>
+
+    <string name="day_today">Aujourd\'hui</string>
+    <string name="day_tomorrow">Demain</string>
+
+    <string name="cd_weather_icon">Conditions météo</string>
+    <string name="cd_delete_city">Supprimer %1$s</string>
+</resources>
