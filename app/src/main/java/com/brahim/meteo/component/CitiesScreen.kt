@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -14,12 +15,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.MyLocation
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -27,9 +32,11 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ToggleFloatingActionButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,16 +54,22 @@ import com.brahim.meteo.R
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.element.CityWeatherCard
 import com.brahim.meteo.element.StateMessage
+import com.brahim.meteo.ui.rememberLocationRequest
 import com.brahim.meteo.viewModel.CitiesVM
+import kotlin.math.abs
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CitiesScreen(
     onOpenMenu: () -> Unit,
     onOpenCity: (City) -> Unit,
     onAddCity: () -> Unit,
     modifier: Modifier = Modifier,
+    homeLatitude: Double? = null,
+    homeLongitude: Double? = null,
+    onSetHomeCity: (City) -> Unit = {},
+    onClearHomeCity: () -> Unit = {},
 ) {
   val viewModel: CitiesVM = viewModel(factory = CitiesVM.Factory)
   val cities by viewModel.cities.collectAsStateWithLifecycle()
@@ -66,17 +79,40 @@ fun CitiesScreen(
   val deletedMessage = stringResource(R.string.snack_deleted)
   val undoLabel = stringResource(R.string.action_cancel)
   var pendingDeletion by remember { mutableStateOf<City?>(null) }
+  var menuExpanded by remember { mutableStateOf(false) }
+  var locationFailed by remember { mutableStateOf(false) }
+  val locationMessage = stringResource(R.string.location_failed)
+  val locationRequest =
+      rememberLocationRequest(
+          onPlace = { place ->
+            viewModel.addPlace(place) { city -> onOpenCity(city) }
+          },
+          onFailure = { locationFailed = true },
+      )
+
+  LaunchedEffect(locationFailed) {
+    if (locationFailed) {
+      snackbarHostState.showSnackbar(locationMessage)
+      locationFailed = false
+    }
+  }
 
   Scaffold(
       modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
       containerColor = MaterialTheme.colorScheme.background,
       snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
-        LargeTopAppBar(
+        LargeFlexibleTopAppBar(
             title = {
               Text(
                   text = stringResource(R.string.screen_weather),
                   style = MaterialTheme.typography.headlineMedium,
+              )
+            },
+            subtitle = {
+              Text(
+                  text = stringResource(R.string.app_tagline),
+                  style = MaterialTheme.typography.bodyMedium,
               )
             },
             navigationIcon = { MenuButton(onClick = onOpenMenu) },
@@ -85,13 +121,38 @@ fun CitiesScreen(
         )
       },
       floatingActionButton = {
-        ExtendedFloatingActionButton(
-            onClick = onAddCity,
-            icon = { Icon(imageVector = Icons.Outlined.Add, contentDescription = null) },
-            text = { Text(stringResource(R.string.cities_add)) },
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        )
+        FloatingActionButtonMenu(
+            expanded = menuExpanded,
+            button = {
+              ToggleFloatingActionButton(
+                  checked = menuExpanded,
+                  onCheckedChange = { menuExpanded = it },
+              ) {
+                Icon(
+                    imageVector = Icons.Outlined.Add,
+                    contentDescription = stringResource(R.string.cities_add),
+                    modifier = Modifier.size(26.dp),
+                )
+              }
+            },
+        ) {
+          FloatingActionButtonMenuItem(
+              onClick = {
+                menuExpanded = false
+                onAddCity()
+              },
+              icon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+              text = { Text(stringResource(R.string.cities_add_search)) },
+          )
+          FloatingActionButtonMenuItem(
+              onClick = {
+                menuExpanded = false
+                locationRequest.request()
+              },
+              icon = { Icon(Icons.Outlined.MyLocation, contentDescription = null) },
+              text = { Text(stringResource(R.string.cities_add_location)) },
+          )
+        }
       },
   ) { innerPadding ->
     if (cities.isEmpty()) {
@@ -125,12 +186,23 @@ fun CitiesScreen(
               ),
           verticalArrangement = Arrangement.spacedBy(10.dp),
       ) {
+        item {
+          Text(
+              text = stringResource(R.string.cities_home_hint),
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+          )
+        }
         items(items = cities, key = { entry -> entry.city.id }) { entry ->
           CityWeatherCard(
               city = entry.city,
               temperature = entry.conditions?.temperature,
+              temperatureMax = entry.today?.temperatureMax,
+              temperatureMin = entry.today?.temperatureMin,
               weatherCode = entry.conditions?.weatherCode,
               isDay = entry.conditions?.isDay ?: true,
+              isHome = isHomeCity(entry.city, homeLatitude, homeLongitude),
               onClick = { onOpenCity(entry.city) },
               onDelete = { pendingDeletion = entry.city },
               modifier = Modifier.animateItem(),
@@ -158,7 +230,9 @@ fun CitiesScreen(
         confirmButton = {
           TextButton(
               onClick = {
+                val wasHome = isHomeCity(city, homeLatitude, homeLongitude)
                 viewModel.delete(city.id)
+                if (wasHome) onClearHomeCity()
                 pendingDeletion = null
                 scope.launch {
                   val result =
@@ -166,7 +240,10 @@ fun CitiesScreen(
                           message = deletedMessage,
                           actionLabel = undoLabel,
                       )
-                  if (result == SnackbarResult.ActionPerformed) viewModel.restore(city)
+                  if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.restore(city)
+                    if (wasHome) onSetHomeCity(city)
+                  }
                 }
               },
           ) {
@@ -181,3 +258,9 @@ fun CitiesScreen(
     )
   }
 }
+
+private fun isHomeCity(city: City, latitude: Double?, longitude: Double?): Boolean =
+    latitude != null &&
+        longitude != null &&
+        abs(city.latitude - latitude) < 0.0001 &&
+        abs(city.longitude - longitude) < 0.0001

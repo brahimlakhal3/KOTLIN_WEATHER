@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import com.brahim.meteo.R
+import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.ui.theme.Motion
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,15 +54,24 @@ fun BackButton(onClick: () -> Unit) {
 
 @Composable
 fun RefreshButton(isSyncing: Boolean, onRefresh: () -> Unit) {
-  val transition = rememberInfiniteTransition(label = "refresh")
-  val angle by
-      transition.animateFloat(
-          initialValue = 0f,
-          targetValue = 360f,
-          animationSpec =
-              infiniteRepeatable(animation = tween(Motion.LONG_2, easing = LinearEasing)),
-          label = "angle",
-      )
+  val animations = LocalAnimationsEnabled.current
+  val angle: Float =
+      if (animations) {
+        val transition = rememberInfiniteTransition(label = "refresh")
+        val value by
+            transition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(Motion.LONG_2, easing = LinearEasing)
+                    ),
+                label = "angle",
+            )
+        value
+      } else {
+        0f
+      }
 
   IconButton(onClick = onRefresh, enabled = !isSyncing) {
     Icon(

@@ -1,5 +1,6 @@
 package com.brahim.meteo.data
 
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
@@ -28,6 +29,12 @@ class MeteoRepository(
 
   suspend fun currentConditions(latitude: Double, longitude: Double): HourlyForecast? =
       database.currentConditions(latitude, longitude)
+
+  suspend fun today(latitude: Double, longitude: Double): DailyForecast? =
+      database.today(latitude, longitude)
+
+  suspend fun airQuality(latitude: Double, longitude: Double): AirQuality? =
+      api.airQuality(latitude, longitude)
 
   suspend fun saveCity(place: Place): Long = database.saveCity(place)
 

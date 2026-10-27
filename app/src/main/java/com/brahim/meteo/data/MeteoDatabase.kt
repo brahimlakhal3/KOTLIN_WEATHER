@@ -4,12 +4,14 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.core.database.sqlite.transaction
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
 import com.brahim.meteo.data.model.Place
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,11 +35,10 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
   }
 
   override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-    db.execSQL("DROP TABLE IF EXISTS $TABLE_HOURLY")
-    db.execSQL("DROP TABLE IF EXISTS $TABLE_DAILY")
-    db.execSQL("DROP TABLE IF EXISTS $TABLE_CITY")
-    db.execSQL("DROP TABLE IF EXISTS $TABLE_SYNC")
-    onCreate(db)
+    if (oldVersion < 2) {
+      // Keep saved cities: only forecast tables are rebuilt when the schema grows.
+      db.execSQL("ALTER TABLE $TABLE_HOURLY ADD COLUMN $COLUMN_SURFACE_PRESSURE REAL")
+    }
   }
 
   fun observeCities(): Flow<List<City>> = revision.map { queryCities() }.flowOn(Dispatchers.IO)
@@ -58,6 +59,13 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
         val items = queryHourly(latitude, longitude)
         val now = Instant.now()
         items.lastOrNull { item -> !item.time.isAfter(now) } ?: items.firstOrNull()
+      }
+
+  suspend fun today(latitude: Double, longitude: Double): DailyForecast? =
+      withContext(Dispatchers.IO) {
+        val offset = queryHourly(latitude, longitude).firstOrNull()?.utcOffsetSeconds ?: 0
+        val today = LocalDate.now(ZoneOffset.ofTotalSeconds(offset))
+        queryDaily(latitude, longitude).firstOrNull { day -> day.date == today }
       }
 
   suspend fun saveCity(place: Place): Long = withContext(Dispatchers.IO) {
@@ -132,15 +140,10 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
       )
 
   suspend fun clearForecast() = withContext(Dispatchers.IO) {
-    val db = writableDatabase
-    db.beginTransaction()
-    try {
-      db.delete(TABLE_HOURLY, null, null)
-      db.delete(TABLE_DAILY, null, null)
-      db.delete(TABLE_SYNC, null, null)
-      db.setTransactionSuccessful()
-    } finally {
-      db.endTransaction()
+    writableDatabase.transaction {
+      delete(TABLE_HOURLY, null, null)
+      delete(TABLE_DAILY, null, null)
+      delete(TABLE_SYNC, null, null)
     }
     notifyChange()
   }
@@ -151,14 +154,9 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
       table: String,
       rows: List<ContentValues>,
   ) = withContext(Dispatchers.IO) {
-    val db = writableDatabase
-    db.beginTransaction()
-    try {
-      db.delete(table, locationSelection, locationArguments(latitude, longitude))
-      rows.forEach { row -> db.insert(table, null, row) }
-      db.setTransactionSuccessful()
-    } finally {
-      db.endTransaction()
+    writableDatabase.transaction {
+      delete(table, locationSelection, locationArguments(latitude, longitude))
+      rows.forEach { row -> insert(table, null, row) }
     }
     notifyChange()
   }
@@ -250,6 +248,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
           val directionIndex = cursor.getColumnIndexOrThrow(COLUMN_WIND_DIRECTION)
           val visibilityIndex = cursor.getColumnIndexOrThrow(COLUMN_VISIBILITY)
           val dewIndex = cursor.getColumnIndexOrThrow(COLUMN_DEW_POINT)
+          val pressureIndex = cursor.getColumnIndexOrThrow(COLUMN_SURFACE_PRESSURE)
           while (cursor.moveToNext()) {
             items +=
                 HourlyForecast(
@@ -267,6 +266,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
                     windDirection = cursor.nullableInt(directionIndex),
                     visibility = cursor.nullableDouble(visibilityIndex),
                     dewPoint = cursor.nullableDouble(dewIndex),
+                    surfacePressure = cursor.nullableDouble(pressureIndex),
                 )
           }
         }
@@ -332,6 +332,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
         put(COLUMN_WIND_DIRECTION, windDirection)
         put(COLUMN_VISIBILITY, visibility)
         put(COLUMN_DEW_POINT, dewPoint)
+        put(COLUMN_SURFACE_PRESSURE, surfacePressure)
       }
 
   private fun DailyForecast.toValues(latitude: Double, longitude: Double) =
@@ -365,7 +366,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
 
   companion object {
     const val DATABASE_NAME = "meteo.db"
-    private const val VERSION = 1
+    private const val VERSION = 2
 
     private const val TABLE_CITY = "city"
     private const val TABLE_HOURLY = "hourly_forecast"
@@ -397,6 +398,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
     private const val COLUMN_WIND_DIRECTION = "wind_direction"
     private const val COLUMN_VISIBILITY = "visibility"
     private const val COLUMN_DEW_POINT = "dew_point"
+    private const val COLUMN_SURFACE_PRESSURE = "surface_pressure"
     private const val COLUMN_SUNRISE = "sunrise_epoch"
     private const val COLUMN_SUNSET = "sunset_epoch"
     private const val COLUMN_UV_INDEX = "uv_index_max"
@@ -430,7 +432,8 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
             "$COLUMN_WIND_GUST REAL, " +
             "$COLUMN_WIND_DIRECTION INTEGER, " +
             "$COLUMN_VISIBILITY REAL, " +
-            "$COLUMN_DEW_POINT REAL)"
+            "$COLUMN_DEW_POINT REAL, " +
+            "$COLUMN_SURFACE_PRESSURE REAL)"
 
     private const val CREATE_DAILY =
         "CREATE TABLE $TABLE_DAILY (" +

@@ -23,6 +23,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 
 sealed interface AppIcon {
   data class Drawable(@param:DrawableRes val res: Int) : AppIcon
@@ -62,6 +63,19 @@ fun MetricGrid(
 
 @Composable
 fun MetricCard(metric: Metric, onClick: () -> Unit, modifier: Modifier = Modifier) {
+  val palette = abs(metric.label.hashCode()) % 3
+  val badgeContainer =
+      when (palette) {
+        0 -> MaterialTheme.colorScheme.primaryContainer
+        1 -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.tertiaryContainer
+      }
+  val badgeContent =
+      when (palette) {
+        0 -> MaterialTheme.colorScheme.onPrimaryContainer
+        1 -> MaterialTheme.colorScheme.onSecondaryContainer
+        else -> MaterialTheme.colorScheme.onTertiaryContainer
+      }
   Surface(
       onClick = onClick,
       modifier = modifier,
@@ -77,7 +91,13 @@ fun MetricCard(metric: Metric, onClick: () -> Unit, modifier: Modifier = Modifie
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(10.dp),
       ) {
-        IconBadge(icon = metric.icon, badgeSize = 32.dp, iconSize = 18.dp)
+        IconBadge(
+            icon = metric.icon,
+            badgeSize = 32.dp,
+            iconSize = 18.dp,
+            containerColor = badgeContainer,
+            contentColor = badgeContent,
+        )
         Text(
             text = metric.label,
             style = MaterialTheme.typography.labelLarge,
@@ -111,15 +131,17 @@ fun IconBadge(
     modifier: Modifier = Modifier,
     badgeSize: Dp = 42.dp,
     iconSize: Dp = 24.dp,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
   Surface(
       modifier = modifier.size(badgeSize),
       shape = CircleShape,
-      color = MaterialTheme.colorScheme.surfaceContainerHighest,
-      contentColor = MaterialTheme.colorScheme.onSurface,
+      color = containerColor,
+      contentColor = contentColor,
   ) {
     Box(contentAlignment = Alignment.Center) {
-      IconView(icon = icon, size = iconSize)
+      IconView(icon = icon, size = iconSize, tint = contentColor)
     }
   }
 }

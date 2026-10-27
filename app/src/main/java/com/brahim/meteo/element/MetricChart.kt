@@ -27,6 +27,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.ui.theme.Motion
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -46,11 +47,16 @@ fun MetricChart(points: List<ChartPoint>, modifier: Modifier = Modifier, height:
   val valueStyle = MaterialTheme.typography.titleSmall.copy(color = tooltipContent)
   val textMeasurer = rememberTextMeasurer()
   val progress = remember { Animatable(0f) }
+  val animations = LocalAnimationsEnabled.current
   var selected by remember(points) { mutableStateOf<Int?>(null) }
 
-  LaunchedEffect(points) {
-    progress.snapTo(0f)
-    progress.animateTo(1f, Motion.standard(Motion.LONG_1))
+  LaunchedEffect(points, animations) {
+    if (animations) {
+      progress.snapTo(0f)
+      progress.animateTo(1f, Motion.standard(Motion.LONG_1))
+    } else {
+      progress.snapTo(1f)
+    }
   }
 
   Canvas(

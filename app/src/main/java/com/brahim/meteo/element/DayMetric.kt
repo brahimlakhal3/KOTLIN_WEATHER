@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Air
 import androidx.compose.material.icons.outlined.DeviceThermostat
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Thermostat
 import androidx.compose.material.icons.outlined.Umbrella
 import androidx.compose.material.icons.outlined.WaterDrop
@@ -13,6 +14,7 @@ import com.brahim.meteo.R
 import com.brahim.meteo.data.model.HourlyForecast
 import com.brahim.meteo.util.formatDistance
 import com.brahim.meteo.util.formatPrecipitation
+import com.brahim.meteo.util.formatPressure
 import com.brahim.meteo.util.formatTemperature
 import com.brahim.meteo.util.formatWind
 
@@ -25,7 +27,8 @@ enum class DayMetric(@param:StringRes val labelRes: Int, val icon: AppIcon) {
   WIND(R.string.metric_wind, AppIcon.Drawable(R.drawable.wind)),
   GUSTS(R.string.metric_gusts, AppIcon.Vector(Icons.Outlined.Air)),
   VISIBILITY(R.string.metric_visibility, AppIcon.Drawable(R.drawable.visibility)),
-  DEW_POINT(R.string.metric_dew_point, AppIcon.Vector(Icons.Outlined.WaterDrop));
+  DEW_POINT(R.string.metric_dew_point, AppIcon.Vector(Icons.Outlined.WaterDrop)),
+  PRESSURE(R.string.metric_pressure, AppIcon.Vector(Icons.Outlined.Speed));
 
   companion object {
     fun fromName(value: String?): DayMetric? =
@@ -44,6 +47,7 @@ fun DayMetric.read(hour: HourlyForecast): Double? =
       DayMetric.GUSTS -> hour.windGust
       DayMetric.VISIBILITY -> hour.visibility?.let { meters -> meters / 1_000.0 }
       DayMetric.DEW_POINT -> hour.dewPoint
+      DayMetric.PRESSURE -> hour.surfacePressure
     }
 
 @Composable
@@ -51,7 +55,7 @@ fun DayMetric.text(value: Double?): String =
     when (this) {
       DayMetric.TEMPERATURE,
       DayMetric.FEELS_LIKE,
-      DayMetric.DEW_POINT -> formatTemperature(value, 0)
+      DayMetric.DEW_POINT -> formatTemperature(value)
       DayMetric.HUMIDITY,
       DayMetric.PROBABILITY ->
           value?.let { amount -> stringResource(R.string.unit_percent, amount.toInt()) } ?: "—"
@@ -59,4 +63,5 @@ fun DayMetric.text(value: Double?): String =
       DayMetric.WIND,
       DayMetric.GUSTS -> formatWind(value, 0)
       DayMetric.VISIBILITY -> formatDistance(value, 1)
+      DayMetric.PRESSURE -> formatPressure(value)
     }

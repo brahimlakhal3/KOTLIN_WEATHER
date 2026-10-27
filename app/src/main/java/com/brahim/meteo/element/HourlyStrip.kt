@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.Icon
@@ -26,7 +26,6 @@ import com.brahim.meteo.R
 import com.brahim.meteo.data.model.HourlyForecast
 import com.brahim.meteo.util.formatHour
 import com.brahim.meteo.util.formatTemperature
-import com.brahim.meteo.util.localDateTime
 
 private val ChipWidth = 88.dp
 
@@ -45,9 +44,10 @@ fun HourlyStrip(
       horizontalArrangement = Arrangement.spacedBy(10.dp),
       verticalAlignment = Alignment.Top,
   ) {
-    items(items = items, key = { item -> item.time.toEpochMilli() }) { item ->
+    itemsIndexed(items = items, key = { _, item -> item.time.toEpochMilli() }) { index, item ->
       HourChip(
           item = item,
+          index = index,
           isCurrent = item.time == currentTime,
           onClick = { onClick(item) },
           modifier = Modifier.width(ChipWidth).animateItem(),
@@ -59,18 +59,25 @@ fun HourlyStrip(
 @Composable
 private fun HourChip(
     item: HourlyForecast,
+    index: Int,
     isCurrent: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-  val container =
-      if (isCurrent) MaterialTheme.colorScheme.primary
-      else MaterialTheme.colorScheme.surfaceContainer
-  val content =
-      if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-  val detail =
-      if (isCurrent) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
-      else MaterialTheme.colorScheme.onSurfaceVariant
+  val (container, content) =
+      when {
+        isCurrent -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
+        index % 3 == 0 ->
+            MaterialTheme.colorScheme.primaryContainer to
+                MaterialTheme.colorScheme.onPrimaryContainer
+        index % 3 == 1 ->
+            MaterialTheme.colorScheme.secondaryContainer to
+                MaterialTheme.colorScheme.onSecondaryContainer
+        else ->
+            MaterialTheme.colorScheme.tertiaryContainer to
+                MaterialTheme.colorScheme.onTertiaryContainer
+      }
+  val detail = content.copy(alpha = 0.78f)
 
   Surface(
       onClick = onClick,
@@ -85,7 +92,7 @@ private fun HourChip(
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
       Text(
-          text = localDateTime(item.time, item.utcOffsetSeconds).formatHour(),
+          text = formatHour(item.time, item.utcOffsetSeconds),
           style = MaterialTheme.typography.labelLarge,
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,
@@ -94,12 +101,10 @@ private fun HourChip(
           weatherCode = item.weatherCode,
           isDay = item.isDay,
           size = 32.dp,
-          tint =
-              if (isCurrent) MaterialTheme.colorScheme.onPrimary
-              else MaterialTheme.colorScheme.onSurface,
+          tint = content,
       )
       AnimatedValue(
-          text = formatTemperature(item.temperature, 0),
+          text = formatTemperature(item.temperature),
           style = MaterialTheme.typography.titleMedium,
       )
       Row(

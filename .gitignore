@@ -14,3 +14,11 @@
 .cxx
 local.properties
 .kotlin
+
+# Release signing secrets
+/keystore.properties
+*.jks
+*.keystore
+
+# Local release artifacts (APK, mapping)
+/app/release/

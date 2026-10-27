@@ -12,7 +12,7 @@ import com.brahim.meteo.config.AppConfigKeys
 import com.brahim.meteo.config.appConfigStore
 import com.brahim.meteo.data.MeteoRepository
 import com.brahim.meteo.data.model.Place
-import java.util.Locale
+import com.brahim.meteo.ui.AppLanguage
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,7 +45,7 @@ class SearchVM(application: Application, private val repository: MeteoRepository
 
   private val language =
       application.appConfigStore.data.map { preferences ->
-        preferences[AppConfigKeys.LANGUAGE].orEmpty().ifBlank { Locale.getDefault().language }
+        AppLanguage.from(preferences[AppConfigKeys.LANGUAGE]).code
       }
 
   val state: StateFlow<SearchUiState> =

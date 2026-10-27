@@ -1,6 +1,8 @@
 package com.brahim.meteo.component
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,22 +23,29 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -51,6 +60,8 @@ import com.brahim.meteo.data.model.Place
 import com.brahim.meteo.element.LoadingState
 import com.brahim.meteo.element.PlaceCard
 import com.brahim.meteo.element.StateMessage
+import com.brahim.meteo.ui.rememberLocationRequest
+import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.viewModel.SearchVM
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -63,13 +74,33 @@ fun SearchScreen(
   val viewModel: SearchVM = viewModel(factory = SearchVM.Factory)
   val state by viewModel.state.collectAsStateWithLifecycle()
   val keyboard = LocalSoftwareKeyboardController.current
+  val animations = LocalAnimationsEnabled.current
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+  val snackbarHostState = remember { SnackbarHostState() }
+  var locationFailed by remember { mutableStateOf(false) }
+  val locationMessage = stringResource(R.string.location_failed)
+  val locationRequest =
+      rememberLocationRequest(
+          onPlace = { place ->
+            keyboard?.hide()
+            viewModel.addPlace(place) { onOpenPlace(place) }
+          },
+          onFailure = { locationFailed = true },
+      )
+
+  LaunchedEffect(locationFailed) {
+    if (locationFailed) {
+      snackbarHostState.showSnackbar(locationMessage)
+      locationFailed = false
+    }
+  }
 
   Scaffold(
       modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
       containerColor = MaterialTheme.colorScheme.background,
+      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
       topBar = {
-        LargeTopAppBar(
+        LargeFlexibleTopAppBar(
             title = {
               Text(
                   text = stringResource(R.string.title_search),
@@ -77,6 +108,14 @@ fun SearchScreen(
               )
             },
             navigationIcon = { MenuButton(onClick = onOpenMenu) },
+            actions = {
+              IconButton(onClick = { locationRequest.request() }) {
+                Icon(
+                    imageVector = Icons.Outlined.MyLocation,
+                    contentDescription = stringResource(R.string.search_use_location),
+                )
+              }
+            },
             colors = appBarColors(),
             scrollBehavior = scrollBehavior,
         )
@@ -92,7 +131,11 @@ fun SearchScreen(
             Icon(imageVector = Icons.Outlined.Search, contentDescription = null)
           },
           trailingIcon = {
-            AnimatedVisibility(visible = state.query.isNotEmpty()) {
+            AnimatedVisibility(
+                visible = state.query.isNotEmpty(),
+                enter = if (animations) fadeIn() else EnterTransition.None,
+                exit = if (animations) fadeOut() else ExitTransition.None,
+            ) {
               IconButton(onClick = viewModel::clearQuery) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
@@ -116,8 +159,8 @@ fun SearchScreen(
 
       AnimatedVisibility(
           visible = state.isSearching,
-          enter = fadeIn() + expandVertically(),
-          exit = fadeOut() + shrinkVertically(),
+          enter = if (animations) fadeIn() + expandVertically() else EnterTransition.None,
+          exit = if (animations) fadeOut() + shrinkVertically() else ExitTransition.None,
       ) {
         Box(modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
           LinearWavyProgressIndicator(

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -85,11 +86,11 @@ fun DailyRow(
           horizontalArrangement = Arrangement.spacedBy(8.dp),
       ) {
         AnimatedValue(
-            text = formatTemperature(item.temperatureMax, 0),
+            text = formatTemperature(item.temperatureMax),
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
-            text = formatTemperature(item.temperatureMin, 0),
+            text = formatTemperature(item.temperatureMin),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -107,7 +108,14 @@ fun TemperatureRangeBar(
     modifier: Modifier = Modifier,
 ) {
   val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-  val barColor = MaterialTheme.colorScheme.primary
+  val barBrush =
+      Brush.horizontalGradient(
+          listOf(
+              MaterialTheme.colorScheme.primary,
+              MaterialTheme.colorScheme.secondary,
+              MaterialTheme.colorScheme.tertiary,
+          )
+      )
   val span = (weekHigh - weekLow).takeIf { value -> value > 0.5 } ?: 1.0
   val start = (low ?: weekLow).minus(weekLow).div(span).coerceIn(0.0, 1.0).toFloat()
   val end =
@@ -122,7 +130,7 @@ fun TemperatureRangeBar(
       val left = size.width * start
       val right = size.width * end.coerceAtMost(1f)
       drawRoundRect(
-          color = barColor,
+          brush = barBrush,
           topLeft = Offset(left, 0f),
           size = Size((right - left).coerceAtLeast(size.height), size.height),
           cornerRadius = CornerRadius(radius, radius),

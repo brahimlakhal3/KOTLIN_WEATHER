@@ -2,6 +2,7 @@ package com.brahim.meteo.element
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Air
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Umbrella
 import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.runtime.Composable
@@ -12,6 +13,7 @@ import com.brahim.meteo.data.model.HourlyForecast
 import com.brahim.meteo.ui.currentLocale
 import com.brahim.meteo.util.formatDistance
 import com.brahim.meteo.util.formatPrecipitation
+import com.brahim.meteo.util.formatPressure
 import com.brahim.meteo.util.formatTemperature
 import com.brahim.meteo.util.formatWind
 import com.brahim.meteo.util.uvIndexText
@@ -41,7 +43,7 @@ fun weatherMetrics(
               hours
                   .firstOrNull()
                   ?.windDirection
-                  ?.let { degrees -> " " + windDirectionLabel(degrees) }
+                  ?.let { degrees -> " " + windDirectionLabel(degrees, locale) }
                   .orEmpty()
 
   return listOf(
@@ -88,8 +90,14 @@ fun weatherMetrics(
       Metric(
           icon = AppIcon.Vector(Icons.Outlined.WaterDrop),
           label = stringResource(R.string.metric_dew_point),
-          value = formatTemperature(value { hour -> hour.dewPoint }, 0),
+          value = formatTemperature(value { hour -> hour.dewPoint }),
           dayMetric = DayMetric.DEW_POINT,
+      ),
+      Metric(
+          icon = AppIcon.Vector(Icons.Outlined.Speed),
+          label = stringResource(R.string.metric_pressure),
+          value = formatPressure(value { hour -> hour.surfacePressure }),
+          dayMetric = DayMetric.PRESSURE,
       ),
       Metric(
           icon = AppIcon.Drawable(R.drawable.uv_index),

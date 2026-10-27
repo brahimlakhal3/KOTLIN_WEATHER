@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.brahim.meteo.MeteoApplication
 import com.brahim.meteo.data.MeteoRepository
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
@@ -28,6 +29,7 @@ data class ForecastUiState(
     val city: City? = null,
     val hourly: List<HourlyForecast> = emptyList(),
     val daily: List<DailyForecast> = emptyList(),
+    val airQuality: AirQuality? = null,
     val syncedAt: Instant? = null,
     val isSyncing: Boolean = false,
     val hasError: Boolean = false,
@@ -53,6 +55,8 @@ class ForecastVM(
 
   private val city = MutableStateFlow<City?>(null)
 
+  private val airQuality = MutableStateFlow<AirQuality?>(null)
+
   private val status = MutableStateFlow(SyncStatus())
 
   private val hourlyFlow =
@@ -75,11 +79,17 @@ class ForecastVM(
           .stateIn(viewModelScope, SharingStarted.WhileSubscribed(REPLAY_MILLIS), emptyList())
 
   val state: StateFlow<ForecastUiState> =
-      combine(city, hourlyFlow, dailyFlow, status) { city, hourly, daily, status ->
+      combine(city, hourlyFlow, dailyFlow, airQuality, status) {
+          city,
+          hourly,
+          daily,
+          airQuality,
+          status ->
             ForecastUiState(
                 city = city,
                 hourly = hourly,
                 daily = daily,
+                airQuality = airQuality,
                 syncedAt = status.syncedAt,
                 isSyncing = status.isSyncing,
                 hasError = status.hasError,
@@ -92,7 +102,7 @@ class ForecastVM(
       city.value = repository.findCity(latitude, longitude)
       val lastSync = repository.syncTime(latitude, longitude)
       status.value = status.value.copy(syncedAt = lastSync, isSyncing = false)
-      if (isStale(lastSync)) sync()
+      if (isStale(lastSync)) sync() else loadAirQuality()
     }
   }
 
@@ -104,8 +114,12 @@ class ForecastVM(
     status.value = status.value.copy(isSyncing = true, hasError = false)
     val success = repository.refresh(latitude, longitude)
     val lastSync = if (success) repository.syncTime(latitude, longitude) else status.value.syncedAt
-    status.value =
-        SyncStatus(isSyncing = false, hasError = !success, syncedAt = lastSync ?: Instant.now())
+    status.value = SyncStatus(isSyncing = false, hasError = !success, syncedAt = lastSync)
+    loadAirQuality()
+  }
+
+  private suspend fun loadAirQuality() {
+    airQuality.value = repository.airQuality(latitude, longitude)
   }
 
   private fun isStale(lastSync: Instant?): Boolean =

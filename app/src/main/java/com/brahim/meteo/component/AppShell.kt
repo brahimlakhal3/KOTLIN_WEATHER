@@ -1,8 +1,11 @@
 package com.brahim.meteo.component
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -35,8 +38,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -53,15 +60,43 @@ import androidx.navigation.navArgument
 import com.brahim.meteo.BuildConfig
 import com.brahim.meteo.R
 import com.brahim.meteo.element.DayMetric
+import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.ui.theme.Motion
 import com.brahim.meteo.viewModel.AppConfigVM
 import kotlinx.coroutines.launch
 
 @Composable
-fun AppShell(configViewModel: AppConfigVM) {
+fun AppShell(
+    configViewModel: AppConfigVM,
+    startScreen: String,
+    homeLatitude: Double? = null,
+    homeLongitude: Double? = null,
+) {
   val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
   val scope = rememberCoroutineScope()
   val navController = rememberNavController()
+  val animations = LocalAnimationsEnabled.current
+  var initialNavigationDone by rememberSaveable { mutableStateOf(false) }
+
+  LaunchedEffect(startScreen, homeLatitude, homeLongitude) {
+    if (!initialNavigationDone) {
+      initialNavigationDone = true
+      when {
+        homeLatitude != null && homeLongitude != null -> {
+          // Every normal launch opens the user's city directly. The city list remains the root,
+          // so Back returns there and another city can be chosen.
+          navController.navigate(Routes.forecast(homeLatitude, homeLongitude)) {
+            launchSingleTop = true
+          }
+        }
+        startScreen == AppConfigVM.START_SCREEN_SEARCH -> {
+          // Search fallback only applies until a city has been chosen.
+          navController.navigate(Screen.Search.route) { launchSingleTop = true }
+        }
+      }
+    }
+  }
+
   val backStackEntry by navController.currentBackStackEntryAsState()
   val currentScreen = Screen.fromRoute(backStackEntry?.destination?.route)
 
@@ -76,6 +111,7 @@ fun AppShell(configViewModel: AppConfigVM) {
         AppDrawer(
             current = currentScreen,
             isOpen = isDrawerOpen,
+            animations = animations,
             onSelect = { screen ->
               scope.launch { drawerState.close() }
               if (screen != currentScreen) {
@@ -91,7 +127,7 @@ fun AppShell(configViewModel: AppConfigVM) {
   ) {
     val drawerProgress by animateFloatAsState(
         targetValue = if (isDrawerOpen) 1f else 0f,
-        animationSpec = Motion.gentleSpring(),
+        animationSpec = if (animations) Motion.gentleSpring() else snap(),
         label = "drawer_content_progress",
     )
 
@@ -111,35 +147,51 @@ fun AppShell(configViewModel: AppConfigVM) {
           navController = navController,
           startDestination = Screen.Cities.route,
           enterTransition = {
-            fadeIn(Motion.enter()) +
-                slideInHorizontally(Motion.enter()) { width -> width / 8 }
+            if (!animations) EnterTransition.None
+            else
+                fadeIn(Motion.enter()) +
+                    slideInHorizontally(Motion.enter()) { width -> width / 8 }
           },
           exitTransition = {
-            fadeOut(Motion.exit()) +
-                slideOutHorizontally(Motion.exit()) { width -> -width / 8 }
+            if (!animations) ExitTransition.None
+            else
+                fadeOut(Motion.exit()) +
+                    slideOutHorizontally(Motion.exit()) { width -> -width / 8 }
           },
           popEnterTransition = {
-            fadeIn(Motion.enter()) +
-                slideInHorizontally(Motion.enter()) { width -> -width / 8 }
+            if (!animations) EnterTransition.None
+            else
+                fadeIn(Motion.enter()) +
+                    slideInHorizontally(Motion.enter()) { width -> -width / 8 }
           },
           popExitTransition = {
-            fadeOut(Motion.exit()) +
-                slideOutHorizontally(Motion.exit()) { width -> width / 8 }
+            if (!animations) ExitTransition.None
+            else
+                fadeOut(Motion.exit()) +
+                    slideOutHorizontally(Motion.exit()) { width -> width / 8 }
           },
       ) {
         composable(Screen.Cities.route) {
           CitiesScreen(
               onOpenMenu = { scope.launch { drawerState.open() } },
               onOpenCity = { city ->
+                configViewModel.setHomeCity(city.latitude, city.longitude)
                 navController.navigate(Routes.forecast(city.latitude, city.longitude))
               },
               onAddCity = { navController.navigate(Screen.Search.route) },
+              homeLatitude = homeLatitude,
+              homeLongitude = homeLongitude,
+              onSetHomeCity = { city ->
+                configViewModel.setHomeCity(city.latitude, city.longitude)
+              },
+              onClearHomeCity = { configViewModel.clearHomeCity() },
           )
         }
         composable(Screen.Search.route) {
           SearchScreen(
               onOpenMenu = { scope.launch { drawerState.open() } },
               onOpenPlace = { place ->
+                configViewModel.setHomeCity(place.latitude, place.longitude)
                 navController.navigate(Routes.forecast(place.latitude, place.longitude)) {
                   popUpTo(Screen.Search.route) { inclusive = true }
                   launchSingleTop = true
@@ -208,17 +260,21 @@ fun AppShell(configViewModel: AppConfigVM) {
 private fun AppDrawer(
     current: Screen?,
     isOpen: Boolean,
+    animations: Boolean,
     onSelect: (Screen) -> Unit,
 ) {
   ModalDrawerSheet(
       modifier = Modifier.width(320.dp),
       drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
   ) {
-    DrawerHeader(isOpen = isOpen)
+    DrawerHeader(isOpen = isOpen, animations = animations)
 
     val dividerAlpha by animateFloatAsState(
         targetValue = if (isOpen) 0.7f else 0f,
-        animationSpec = tween(durationMillis = Motion.MEDIUM_1, easing = Motion.emphasizedDecelerate),
+        animationSpec =
+            if (animations) {
+              tween(durationMillis = Motion.MEDIUM_1, easing = Motion.emphasizedDecelerate)
+            } else snap(),
         label = "divider_alpha_1",
     )
 
@@ -232,28 +288,37 @@ private fun AppDrawer(
 
       val itemAlpha by animateFloatAsState(
           targetValue = if (isOpen) 1f else 0f,
-          animationSpec = tween(
-              durationMillis = Motion.MEDIUM_2,
-              delayMillis = if (isOpen) 60 + (index * 35) else 0,
-              easing = Motion.emphasizedDecelerate,
-          ),
+          animationSpec =
+              if (animations) {
+                tween(
+                    durationMillis = Motion.MEDIUM_2,
+                    delayMillis = if (isOpen) 60 + (index * 35) else 0,
+                    easing = Motion.emphasizedDecelerate,
+                )
+              } else snap(),
           label = "item_alpha_$index",
       )
       val itemOffsetX by animateFloatAsState(
           targetValue = if (isOpen) 0f else -36f,
-          animationSpec = spring(
-              dampingRatio = Spring.DampingRatioNoBouncy,
-              stiffness = Spring.StiffnessMediumLow,
-          ),
+          animationSpec =
+              if (animations) {
+                spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow,
+                )
+              } else snap(),
           label = "item_offset_$index",
       )
 
       val iconScale by animateFloatAsState(
           targetValue = if (isSelected) 1.15f else 1.0f,
-          animationSpec = spring(
-              dampingRatio = Spring.DampingRatioMediumBouncy,
-              stiffness = Spring.StiffnessMedium,
-          ),
+          animationSpec =
+              if (animations) {
+                spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium,
+                )
+              } else snap(),
           label = "item_icon_scale_$index",
       )
 
@@ -297,11 +362,14 @@ private fun AppDrawer(
 
     val footerAlpha by animateFloatAsState(
         targetValue = if (isOpen) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = Motion.MEDIUM_2,
-            delayMillis = if (isOpen) 180 else 0,
-            easing = Motion.emphasizedDecelerate,
-        ),
+        animationSpec =
+            if (animations) {
+              tween(
+                  durationMillis = Motion.MEDIUM_2,
+                  delayMillis = if (isOpen) 180 else 0,
+                  easing = Motion.emphasizedDecelerate,
+              )
+            } else snap(),
         label = "footer_alpha",
     )
 
@@ -321,29 +389,38 @@ private fun AppDrawer(
 }
 
 @Composable
-private fun DrawerHeader(isOpen: Boolean) {
+private fun DrawerHeader(isOpen: Boolean, animations: Boolean) {
   val headerAlpha by animateFloatAsState(
       targetValue = if (isOpen) 1f else 0f,
-      animationSpec = tween(
-          durationMillis = Motion.MEDIUM_2,
-          easing = Motion.emphasizedDecelerate,
-      ),
+      animationSpec =
+          if (animations) {
+            tween(
+                durationMillis = Motion.MEDIUM_2,
+                easing = Motion.emphasizedDecelerate,
+            )
+          } else snap(),
       label = "header_alpha",
   )
   val headerTranslationX by animateFloatAsState(
       targetValue = if (isOpen) 0f else -32f,
-      animationSpec = spring(
-          dampingRatio = Spring.DampingRatioNoBouncy,
-          stiffness = Spring.StiffnessMediumLow,
-      ),
+      animationSpec =
+          if (animations) {
+            spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow,
+            )
+          } else snap(),
       label = "header_translation",
   )
   val iconRotation by animateFloatAsState(
       targetValue = if (isOpen) 0f else -25f,
-      animationSpec = spring(
-          dampingRatio = Spring.DampingRatioMediumBouncy,
-          stiffness = Spring.StiffnessLow,
-      ),
+      animationSpec =
+          if (animations) {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow,
+            )
+          } else snap(),
       label = "header_icon_rotation",
   )
 

@@ -1,5 +1,6 @@
 package com.brahim.meteo.element
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Icon
@@ -19,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -33,11 +37,14 @@ import com.brahim.meteo.util.weatherCondition
 fun CityWeatherCard(
     city: City,
     temperature: Double?,
+    modifier: Modifier = Modifier,
+    temperatureMax: Double? = null,
+    temperatureMin: Double? = null,
     weatherCode: Int?,
     isDay: Boolean,
+    isHome: Boolean = false,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
   val condition = weatherCondition(weatherCode)
   Surface(
@@ -52,16 +59,48 @@ fun CityWeatherCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-      Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-        WeatherIcon(weatherCode = weatherCode, isDay = isDay, size = 36.dp)
+      Box(
+          modifier =
+              Modifier.size(52.dp)
+                  .clip(CircleShape)
+                  .background(
+                      Brush.linearGradient(
+                          listOf(
+                              MaterialTheme.colorScheme.primaryContainer,
+                              MaterialTheme.colorScheme.tertiaryContainer,
+                          )
+                      )
+                  ),
+          contentAlignment = Alignment.Center,
+      ) {
+        WeatherIcon(
+            weatherCode = weatherCode,
+            isDay = isDay,
+            size = 34.dp,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
       }
       Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            text = city.name,
-            style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+          Text(
+              text = city.name,
+              style = MaterialTheme.typography.titleMedium,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.weight(1f, fill = false),
+          )
+          if (isHome) {
+            Icon(
+                imageVector = Icons.Filled.Home,
+                contentDescription = stringResource(R.string.city_home_badge),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp),
+            )
+          }
+        }
         Text(
             text = regionLabel(city.admin1, city.country),
             style = MaterialTheme.typography.bodySmall,
@@ -72,7 +111,7 @@ fun CityWeatherCard(
       }
       Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
-            text = formatTemperature(temperature, 0),
+            text = formatTemperature(temperature),
             style = MaterialTheme.typography.headlineSmall,
         )
         Text(
@@ -82,6 +121,19 @@ fun CityWeatherCard(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        if (temperatureMax != null && temperatureMin != null) {
+          Text(
+              text =
+                  stringResource(
+                      R.string.city_high_low,
+                      formatTemperature(temperatureMax),
+                      formatTemperature(temperatureMin),
+                  ),
+              style = MaterialTheme.typography.labelSmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              maxLines = 1,
+          )
+        }
       }
       IconButton(onClick = onDelete) {
         Icon(

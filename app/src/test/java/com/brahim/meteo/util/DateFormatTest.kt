@@ -36,6 +36,28 @@ class DateFormatTest {
   }
 
   @Test
+  fun formatsTwelveHourClock() {
+    assertEquals(
+        "3:05 PM",
+        LocalDateTime.of(2026, 3, 4, 15, 5).formatHour(TimeFormat.HOUR_12, Locale.US),
+    )
+  }
+
+  @Test
+  fun formatsSyncTimeWithTwelveHourClock() {
+    val instant = Instant.parse("2026-03-04T15:15:00Z")
+
+    assertEquals(
+        "4 Mar, 4:15 PM",
+        instant.formatSyncTime(
+            Locale.US,
+            ZoneId.of("Europe/Paris"),
+            timeFormat = TimeFormat.HOUR_12,
+        ),
+    )
+  }
+
+  @Test
   fun formatsShortDate() {
     assertEquals("4 mars", LocalDate.of(2026, 3, 4).formatShort(locale))
   }

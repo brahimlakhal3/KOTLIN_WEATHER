@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.brahim.meteo.MeteoApplication
 import com.brahim.meteo.data.MeteoRepository
 import com.brahim.meteo.data.model.City
+import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
 import com.brahim.meteo.data.model.Place
 import java.time.Duration
@@ -27,7 +28,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class CityWeather(val city: City, val conditions: HourlyForecast?)
+data class CityWeather(
+    val city: City,
+    val conditions: HourlyForecast?,
+    val today: DailyForecast? = null,
+)
 
 class CitiesVM(private val repository: MeteoRepository) : ViewModel() {
 
@@ -36,7 +41,11 @@ class CitiesVM(private val repository: MeteoRepository) : ViewModel() {
           .observeCities()
           .map { cities ->
             cities.map { city ->
-              CityWeather(city, repository.currentConditions(city.latitude, city.longitude))
+              CityWeather(
+                  city = city,
+                  conditions = repository.currentConditions(city.latitude, city.longitude),
+                  today = repository.today(city.latitude, city.longitude),
+              )
             }
           }
           .flowOn(Dispatchers.IO)
@@ -60,6 +69,14 @@ class CitiesVM(private val repository: MeteoRepository) : ViewModel() {
       combine(repository.observeCities(), ticker) { cities, _ -> cities }.collect { cities ->
         cities.forEach { city -> refreshIfStale(city.latitude, city.longitude) }
       }
+    }
+  }
+
+  fun addPlace(place: Place, onAdded: (City) -> Unit = {}) {
+    viewModelScope.launch {
+      repository.saveCity(place)
+      val city = repository.findCity(place.latitude, place.longitude)
+      if (city != null) onAdded(city)
     }
   }
 
