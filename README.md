@@ -6,7 +6,7 @@
 [![API](https://img.shields.io/badge/Data_Provider-Open--Meteo_API-00A8E8?style=for-the-badge)](https://open-meteo.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-**Météo** is a native Android weather app built with **Jetpack Compose** and **Material 3 Expressive**. It combines multi-city forecasts, hourly and daily analytics, local weather alerts, air quality, smart advice, sun and moon data, and full offline caching with a highly configurable interface.
+**Météo** is a native Android weather app built with **Jetpack Compose** and **Material 3 Expressive**. It combines multi-city forecasts, hourly and daily analytics, local weather alerts, priority-ranked smart advice, sun and moon data, and full offline caching with a highly configurable interface.
 
 ---
 
@@ -28,6 +28,10 @@
 
 ##  Key Features
 
+###  Expressive Launch
+- Native Android splash hand-off plus a lightweight animated Compose splash using Material 3 Expressive shapes and motion.
+- App content and onboarding warm up underneath the splash, so the first interactive screen is ready without a blank frame.
+
 ###  First-Launch Onboarding
 - Asks for the current location immediately and opens that city's forecast directly — no location/search chooser.
 - Falls back to city search only when location permission is denied or the provider is unavailable.
@@ -47,17 +51,15 @@
 - Interactive metric charts for temperature, precipitation, wind, humidity, pressure, and UV index.
 - Dedicated day view with hourly insights and a full metric breakdown.
 - Pull-to-refresh, adaptive flexible app bars, and animated content reveals.
-- Share a concise text forecast for the current city.
 
 ###  Weather Alerts and Smart Advice
 - Local, forecast-derived warnings for heat, cold, wind, heavy rain, snow, UV, thunderstorms, and fog.
-- Context-aware advice for umbrellas, clothing, sun protection, wind, air quality, visibility, and hydration.
+- Priority-ranked advice with live values for storms, snow, umbrellas, clothing, heat, UV, wind, visibility, humidity, and hydration.
+- A calm-weather fallback so the advice card is always useful.
 - Alerts and advice update together with the forecast. Alerts can be hidden in Settings.
 
-###  Air Quality and Astronomy
-- Air quality from the Open-Meteo Air Quality API, including European/US AQI, PM2.5, PM10, ozone, NO₂, SO₂, CO, and pollen.
+###  Astronomy
 - Sun and moon card with sunrise, sunset, daylight duration, moon phase, and illumination.
-- Optional air quality display and dedicated settings toggle.
 
 ###  Personalisation Without Losing the Neutral Canvas
 - **6 theme modes**: Auto, Very light, Light, Soft, Dark, and Very dark.
@@ -66,15 +68,10 @@
 - **Animation toggle** for motion-sensitive users.
 - Background and primary surfaces stay neutral gray while accent colours flow through cards, containers, badges, and gradients.
 
-###  Granular Units and Display Controls
-- Temperature: Celsius or Fahrenheit, with 0–2 decimal places.
-- Wind: km/h, mph, m/s, or knots.
-- Precipitation: millimetres or inches.
-- Distance: kilometres or miles.
-- Pressure: hPa or inHg.
-- Time: 12-hour or 24-hour clock.
-- Toggle weather alerts and air quality.
+###  Display and Data Controls
+- Toggle weather alerts.
 - Clear the forecast cache, reset all preferences, or replay onboarding to find your city again.
+- Settings stay intentionally compact: appearance, language, alerts, and data actions only.
 
 ###  Multilingual Interface
 The app ships with **8 languages**:
@@ -110,12 +107,12 @@ com.brahim.meteo
 ├── element/            # Reusable UI: cards, charts, feature panels, state views
 ├── ui/                 # Languages, locale plumbing, location requests and theme
 │   └── theme/          # Material 3 Expressive theme, accents, shapes and type
-├── util/               # Units, dates, alerts, advice, air quality, sharing, moon phase
+├── util/               # Formatting, dates, alerts, advice, city matching, moon phase
 └── viewModel/          # AppConfig, onboarding, cities, search, forecast, day, settings
 ```
 
 ### Data Flow
-- `AppConfigVM` owns onboarding state, appearance, language, units, and display toggles through DataStore.
+- `AppConfigVM` owns onboarding state, appearance, language, and display toggles through DataStore.
 - `MeteoRepository` coordinates the Open-Meteo API, local SQLite cache, and city storage.
 - Screen ViewModels expose immutable UI state over `StateFlow` and collect database/network updates.
 - Composable screens receive state and callbacks; navigation and themes are composed at the app shell level.
@@ -176,7 +173,7 @@ com.brahim.meteo
 
 ##  Testing
 
-The unit test suite covers utility formatters, date and time formatting, wind direction labels, number formatting, UV index handling, weather condition mapping, weather alerts, AQI thresholds and pollen, and moon phases.
+The unit test suite covers utility formatters, date and time formatting, wind direction labels, number formatting, UV index handling, weather condition mapping, weather alerts, priority-ranked smart advice, city proximity matching, and moon phases.
 
 ```bash
 bash ./gradlew :app:testDebugUnitTest --info
@@ -192,7 +189,7 @@ bash ./gradlew :app:compileDebugKotlin :app:assembleDebug
 
 ##  Data Attribution
 
-- Weather, geocoding, and air quality data: [Open-Meteo](https://open-meteo.com).
+- Weather and geocoding data: [Open-Meteo](https://open-meteo.com).
 - Weather icons: AmCharts and Home Assistant (MIT).
 
 ---

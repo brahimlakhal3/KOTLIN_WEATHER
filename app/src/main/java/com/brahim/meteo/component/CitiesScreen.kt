@@ -55,8 +55,8 @@ import com.brahim.meteo.data.model.City
 import com.brahim.meteo.element.CityWeatherCard
 import com.brahim.meteo.element.StateMessage
 import com.brahim.meteo.ui.rememberLocationRequest
+import com.brahim.meteo.util.isSameCity
 import com.brahim.meteo.viewModel.CitiesVM
-import kotlin.math.abs
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -262,5 +262,4 @@ fun CitiesScreen(
 private fun isHomeCity(city: City, latitude: Double?, longitude: Double?): Boolean =
     latitude != null &&
         longitude != null &&
-        abs(city.latitude - latitude) < 0.0001 &&
-        abs(city.longitude - longitude) < 0.0001
+        isSameCity(city.latitude, city.longitude, latitude, longitude)

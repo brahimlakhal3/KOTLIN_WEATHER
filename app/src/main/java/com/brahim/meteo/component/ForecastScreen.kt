@@ -11,14 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
@@ -34,17 +30,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brahim.meteo.R
-import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
-import com.brahim.meteo.element.AirQualityCard
 import com.brahim.meteo.element.DailyRow
 import com.brahim.meteo.element.DayMetric
 import com.brahim.meteo.element.HourlyStrip
@@ -61,13 +54,10 @@ import com.brahim.meteo.element.weatherMetrics
 import com.brahim.meteo.ui.currentLocale
 import com.brahim.meteo.util.dayLabel
 import com.brahim.meteo.util.formatHour
-import com.brahim.meteo.util.formatPrecipitation
 import com.brahim.meteo.util.formatShort
 import com.brahim.meteo.util.formatSyncTime
 import com.brahim.meteo.util.formatTemperature
-import com.brahim.meteo.util.formatWind
 import com.brahim.meteo.util.localDateTime
-import com.brahim.meteo.util.shareText
 import com.brahim.meteo.util.weatherAlerts
 import com.brahim.meteo.util.weatherCondition
 import com.brahim.meteo.viewModel.AppConfigVM
@@ -94,13 +84,10 @@ fun ForecastScreen(
   val config by configViewModel.config.collectAsStateWithLifecycle()
   val state by viewModel.state.collectAsStateWithLifecycle()
   val locale = currentLocale()
-  val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
   val errorMessage = stringResource(R.string.snack_error)
   val showAlerts = config?.showAlerts ?: true
-  val showAirQuality = config?.showAirQuality ?: true
-  val shareText = forecastShareText(state.hourly, state.daily, state.city?.name)
 
   LaunchedEffect(state.hasError) {
     if (state.hasError && state.hasContent) snackbarHostState.showSnackbar(errorMessage)
@@ -134,37 +121,11 @@ fun ForecastScreen(
             },
             navigationIcon = { BackButton(onClick = onBack) },
             actions = {
-              IconButton(onClick = {
-                context.shareText(shareText, R.string.share_chooser)
-              }) {
-                Icon(
-                    imageVector = Icons.Outlined.Share,
-                    contentDescription = stringResource(R.string.action_share),
-                )
-              }
               RefreshButton(isSyncing = state.isSyncing, onRefresh = viewModel::refresh)
             },
             colors = appBarColors(),
             scrollBehavior = scrollBehavior,
         )
-      },
-      floatingActionButton = {
-        HorizontalFloatingToolbar(expanded = true) {
-          IconButton(onClick = viewModel::refresh) {
-            Icon(
-                imageVector = Icons.Outlined.Refresh,
-                contentDescription = stringResource(R.string.refresh),
-            )
-          }
-          IconButton(onClick = {
-            context.shareText(shareText, R.string.share_chooser)
-          }) {
-            Icon(
-                imageVector = Icons.Outlined.Share,
-                contentDescription = stringResource(R.string.action_share),
-            )
-          }
-        }
       },
   ) { innerPadding ->
     when {
@@ -194,11 +155,9 @@ fun ForecastScreen(
             ForecastContent(
                 hourly = state.hourly,
                 daily = state.daily,
-                airQuality = state.airQuality,
                 syncedAt = state.syncedAt,
                 locale = locale,
                 showAlerts = showAlerts,
-                showAirQuality = showAirQuality,
                 onOpenDay = onOpenDay,
             )
           }
@@ -210,11 +169,9 @@ fun ForecastScreen(
 private fun ForecastContent(
     hourly: List<HourlyForecast>,
     daily: List<DailyForecast>,
-    airQuality: AirQuality?,
     syncedAt: Instant?,
     locale: Locale,
     showAlerts: Boolean,
-    showAirQuality: Boolean,
     onOpenDay: (Long, DayMetric?) -> Unit,
 ) {
   val current = hourly.firstOrNull() ?: return
@@ -281,20 +238,13 @@ private fun ForecastContent(
         }
       }
     }
-    if (showAirQuality && airQuality != null) {
-      item {
-        Reveal(index = 2, modifier = Modifier.padding(horizontal = 12.dp)) {
-          AirQualityCard(airQuality = airQuality)
-        }
+    item {
+      Reveal(index = 2, modifier = Modifier.padding(horizontal = 12.dp)) {
+        SmartAdviceCard(hourly = hourly, daily = daily)
       }
     }
     item {
       Reveal(index = 3, modifier = Modifier.padding(horizontal = 12.dp)) {
-        SmartAdviceCard(hourly = hourly, daily = daily, airQuality = airQuality)
-      }
-    }
-    item {
-      Reveal(index = 4, modifier = Modifier.padding(horizontal = 12.dp)) {
         SunMoonCard(day = today)
       }
     }
@@ -355,49 +305,6 @@ private fun ForecastContent(
       )
     }
   }
-}
-
-@Composable
-private fun forecastShareText(
-    hourly: List<HourlyForecast>,
-    daily: List<DailyForecast>,
-    cityName: String?,
-): String {
-  val current = hourly.firstOrNull() ?: return ""
-  val today = daily.firstOrNull()
-  val title = stringResource(R.string.share_text_title, cityName ?: stringResource(R.string.screen_weather))
-  val now =
-      stringResource(
-          R.string.share_now,
-          formatTemperature(current.temperature),
-          stringResource(weatherCondition(current.weatherCode).labelRes),
-      )
-  val highLow =
-      if (today?.temperatureMax != null && today.temperatureMin != null) {
-        stringResource(
-            R.string.share_high_low,
-            formatTemperature(today.temperatureMax),
-            formatTemperature(today.temperatureMin),
-        )
-      } else null
-  val wind =
-      current.windSpeed?.let { speed ->
-        stringResource(R.string.share_wind, formatWind(speed, 0))
-      }
-  val rain =
-      today?.precipitationSum?.let { amount ->
-        stringResource(R.string.share_rain, formatPrecipitation(amount, 1))
-      }
-  return listOfNotNull(
-          title,
-          now,
-          highLow,
-          wind,
-          rain,
-          "",
-          stringResource(R.string.share_footer),
-      )
-      .joinToString("\n")
 }
 
 private fun epochDayOf(hour: HourlyForecast): Long =

@@ -9,6 +9,8 @@ import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
 import com.brahim.meteo.data.model.Place
+import com.brahim.meteo.util.CITY_MATCH_DEGREES
+import com.brahim.meteo.util.isSameCity
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -38,6 +40,9 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
     if (oldVersion < 2) {
       // Keep saved cities: only forecast tables are rebuilt when the schema grows.
       db.execSQL("ALTER TABLE $TABLE_HOURLY ADD COLUMN $COLUMN_SURFACE_PRESSURE REAL")
+    }
+    if (oldVersion < 3) {
+      dedupeCities(db)
     }
   }
 
@@ -69,18 +74,23 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
       }
 
   suspend fun saveCity(place: Place): Long = withContext(Dispatchers.IO) {
-    queryCity(place.latitude, place.longitude)?.let { return@withContext it.id }
-    val values =
-        ContentValues().apply {
-          put(COLUMN_NAME, place.name)
-          put(COLUMN_COUNTRY, place.country)
-          put(COLUMN_ADMIN1, place.admin1)
-          put(COLUMN_LATITUDE, place.latitude)
-          put(COLUMN_LONGITUDE, place.longitude)
-          put(COLUMN_ADDED_AT, Instant.now().toEpochMilli())
+    val (id, inserted) =
+        writableDatabase.transaction {
+          queryCity(place.latitude, place.longitude)?.let { existing ->
+            return@transaction existing.id to false
+          }
+          val values =
+              ContentValues().apply {
+                put(COLUMN_NAME, place.name)
+                put(COLUMN_COUNTRY, place.country)
+                put(COLUMN_ADMIN1, place.admin1)
+                put(COLUMN_LATITUDE, place.latitude)
+                put(COLUMN_LONGITUDE, place.longitude)
+                put(COLUMN_ADDED_AT, Instant.now().toEpochMilli())
+              }
+          insert(TABLE_CITY, null, values) to true
         }
-    val id = writableDatabase.insert(TABLE_CITY, null, values)
-    notifyChange()
+    if (inserted) notifyChange()
     id
   }
 
@@ -198,11 +208,17 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
         .query(
             TABLE_CITY,
             null,
-            locationSelection,
-            locationArguments(latitude, longitude),
+            "$COLUMN_LATITUDE BETWEEN ? AND ? AND $COLUMN_LONGITUDE BETWEEN ? AND ?",
+            arrayOf(
+                (latitude - CITY_MATCH_DEGREES).toString(),
+                (latitude + CITY_MATCH_DEGREES).toString(),
+                (longitude - CITY_MATCH_DEGREES).toString(),
+                (longitude + CITY_MATCH_DEGREES).toString(),
+            ),
             null,
             null,
-            null,
+            "$COLUMN_ADDED_AT ASC",
+            "1",
         )
         .use { cursor ->
           if (!cursor.moveToFirst()) return null
@@ -364,9 +380,55 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
   private fun android.database.Cursor.nullableLong(index: Int): Long? =
       if (isNull(index)) null else getLong(index)
 
+  /**
+   * Older builds stored a new row for every GPS fix, even when the fix moved by only a few metres.
+   * Keep the first row of each cluster and remove the near-duplicates and their cached forecast.
+   */
+  private fun dedupeCities(db: SQLiteDatabase) {
+    val rows = mutableListOf<Triple<Long, Double, Double>>()
+    db.query(
+            TABLE_CITY,
+            arrayOf(COLUMN_ID, COLUMN_LATITUDE, COLUMN_LONGITUDE),
+            null,
+            null,
+            null,
+            null,
+            "$COLUMN_ADDED_AT ASC, $COLUMN_ID ASC",
+        )
+        .use { cursor ->
+          val idIndex = cursor.getColumnIndexOrThrow(COLUMN_ID)
+          val latitudeIndex = cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)
+          val longitudeIndex = cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE)
+          while (cursor.moveToNext()) {
+            rows +=
+                Triple(
+                    cursor.getLong(idIndex),
+                    cursor.getDouble(latitudeIndex),
+                    cursor.getDouble(longitudeIndex),
+                )
+          }
+        }
+
+    val kept = mutableListOf<Pair<Double, Double>>()
+    rows.forEach { (id, latitude, longitude) ->
+      val duplicate = kept.any { (keptLatitude, keptLongitude) ->
+        isSameCity(latitude, longitude, keptLatitude, keptLongitude)
+      }
+      if (duplicate) {
+        val arguments = locationArguments(latitude, longitude)
+        db.delete(TABLE_CITY, "$COLUMN_ID = ?", arrayOf(id.toString()))
+        db.delete(TABLE_HOURLY, locationSelection, arguments)
+        db.delete(TABLE_DAILY, locationSelection, arguments)
+        db.delete(TABLE_SYNC, locationSelection, arguments)
+      } else {
+        kept += latitude to longitude
+      }
+    }
+  }
+
   companion object {
     const val DATABASE_NAME = "meteo.db"
-    private const val VERSION = 2
+    private const val VERSION = 3
 
     private const val TABLE_CITY = "city"
     private const val TABLE_HOURLY = "hourly_forecast"

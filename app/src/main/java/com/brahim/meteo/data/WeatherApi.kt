@@ -1,6 +1,5 @@
 package com.brahim.meteo.data
 
-import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.ForecastPayload
 import com.brahim.meteo.data.model.HourlyForecast
@@ -36,23 +35,6 @@ class WeatherApi(private val client: HttpClient = createClient()) {
                 }
                 .bodyAsText()
         parseForecast(payload)
-      }
-
-  suspend fun airQuality(latitude: Double, longitude: Double): AirQuality? =
-      withContext(Dispatchers.IO) {
-        runCatching {
-              val payload =
-                  client
-                      .get(AIR_QUALITY_URL) {
-                        parameter("latitude", latitude)
-                        parameter("longitude", longitude)
-                        parameter("timezone", TIMEZONE_AUTO)
-                        parameter("current", AIR_QUALITY_FIELDS)
-                      }
-                      .bodyAsText()
-              parseAirQuality(payload)
-            }
-            .getOrNull()
       }
 
   suspend fun searchPlaces(query: String, language: String): List<Place> =
@@ -126,41 +108,6 @@ class WeatherApi(private val client: HttpClient = createClient()) {
     return ForecastPayload(hourly = hourly, daily = daily)
   }
 
-  private fun parseAirQuality(payload: String): AirQuality? {
-    val root = JSONObject(payload)
-    val current = root.optJSONObject("current") ?: return null
-    val offsetSeconds = root.optInt("utc_offset_seconds", 0)
-    val zone = ZoneOffset.ofTotalSeconds(offsetSeconds)
-    val time =
-        current.optString("time").takeIf { it.isNotBlank() }?.let { raw ->
-          runCatching { LocalDateTime.parse(raw).toInstant(zone) }.getOrNull()
-        } ?: Instant.now()
-    return AirQuality(
-        time = time,
-        utcOffsetSeconds = offsetSeconds,
-        europeanAqi = current.intValue("european_aqi"),
-        usAqi = current.intValue("us_aqi"),
-        pm25 = current.doubleOrNull("pm2_5"),
-        pm10 = current.doubleOrNull("pm10"),
-        ozone = current.doubleOrNull("ozone"),
-        nitrogenDioxide = current.doubleOrNull("nitrogen_dioxide"),
-        sulphurDioxide = current.doubleOrNull("sulphur_dioxide"),
-        carbonMonoxide = current.doubleOrNull("carbon_monoxide"),
-        alderPollen = current.doubleOrNull("alder_pollen"),
-        birchPollen = current.doubleOrNull("birch_pollen"),
-        grassPollen = current.doubleOrNull("grass_pollen"),
-        mugwortPollen = current.doubleOrNull("mugwort_pollen"),
-        olivePollen = current.doubleOrNull("olive_pollen"),
-        ragweedPollen = current.doubleOrNull("ragweed_pollen"),
-    )
-  }
-
-  private fun JSONObject.intValue(key: String): Int? {
-    if (!has(key) || isNull(key)) return null
-    val value = optDouble(key)
-    return if (value.isNaN()) null else value.toInt()
-  }
-
   private fun parsePlaces(payload: String): List<Place> {
     val results = JSONObject(payload).optJSONArray("results") ?: return emptyList()
     val places = mutableListOf<Place>()
@@ -220,7 +167,6 @@ class WeatherApi(private val client: HttpClient = createClient()) {
   companion object {
     private const val FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
     private const val GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
-    private const val AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
     private const val TIMEZONE_AUTO = "auto"
     private const val FORECAST_DAYS = 7
     private const val SEARCH_COUNT = 12
@@ -236,10 +182,6 @@ class WeatherApi(private val client: HttpClient = createClient()) {
     private const val DAILY_FIELDS =
         "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset," +
             "uv_index_max"
-
-    private const val AIR_QUALITY_FIELDS =
-        "european_aqi,us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide," +
-            "ozone,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen"
 
     private fun createClient() =
         HttpClient(CIO) {

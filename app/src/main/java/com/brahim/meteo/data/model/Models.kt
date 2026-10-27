@@ -55,27 +55,3 @@ data class ForecastPayload(
     val hourly: List<HourlyForecast>,
     val daily: List<DailyForecast>,
 )
-
-data class AirQuality(
-    val time: Instant,
-    val utcOffsetSeconds: Int,
-    val europeanAqi: Int?,
-    val usAqi: Int?,
-    val pm25: Double?,
-    val pm10: Double?,
-    val ozone: Double?,
-    val nitrogenDioxide: Double?,
-    val sulphurDioxide: Double?,
-    val carbonMonoxide: Double?,
-    val alderPollen: Double?,
-    val birchPollen: Double?,
-    val grassPollen: Double?,
-    val mugwortPollen: Double?,
-    val olivePollen: Double?,
-    val ragweedPollen: Double?,
-) {
-  val pollen: Double?
-    get() =
-        listOfNotNull(alderPollen, birchPollen, grassPollen, mugwortPollen, olivePollen, ragweedPollen)
-            .maxOrNull()
-}

@@ -7,8 +7,6 @@
     <string name="menu">Menüyü aç</string>
     <string name="back">Geri</string>
     <string name="refresh">Yenile</string>
-    <string name="action_share">Paylaş</string>
-    <string name="share_chooser">Tahmini paylaş</string>
 
     <string name="screen_weather">Hava Durumu</string>
     <string name="screen_search">Ara</string>
@@ -121,41 +119,7 @@
     <string name="alert_fog_message">Görüş mesafesi düşük. Dikkatli sür.</string>
 
     <string name="advice_title">Akıllı öneriler</string>
-    <string name="advice_umbrella_title">Şemsiye al</string>
-    <string name="advice_umbrella_message">Önümüzdeki saatlerde yağmur olası.</string>
-    <string name="advice_jacket_title">Kalın bir ceket giy</string>
-    <string name="advice_jacket_message">Dışarısı soğuk olacak.</string>
-    <string name="advice_layers_title">Katmanlı giyin</string>
-    <string name="advice_layers_message">Hafif bir ceket işe yarar.</string>
-    <string name="advice_sunscreen_title">Güneş koruması</string>
-    <string name="advice_sunscreen_message">UV seviyeleri bugün yüksek.</string>
-    <string name="advice_wind_title">Rüzgarlı olacak</string>
-    <string name="advice_wind_message">Rüzgar geçirmez bir katman işe yarar.</string>
-    <string name="advice_air_title">Hava kalitesi düşük</string>
-    <string name="advice_air_message">Yoğun açık hava egzersizini sınırla.</string>
-    <string name="advice_visibility_title">Görüş azalacak</string>
-    <string name="advice_visibility_message">Yolculuk için daha fazla zaman ayır.</string>
-    <string name="advice_hydrate_title">Su içmeyi unutma</string>
-    <string name="advice_hydrate_message">Bugün hava sıcak olacak.</string>
 
-    <string name="aqi_title">Hava kalitesi</string>
-    <string name="aqi_good">İyi</string>
-    <string name="aqi_fair">Makul</string>
-    <string name="aqi_moderate">Orta</string>
-    <string name="aqi_poor">Kötü</string>
-    <string name="aqi_very_poor">Çok kötü</string>
-    <string name="aqi_extreme">Aşırı kötü</string>
-    <string name="aqi_european">Avrupa AQI</string>
-    <string name="aqi_us">ABD AQI</string>
-    <string name="aqi_value">%1$d · %2$s</string>
-    <string name="aqi_pm25">PM2,5</string>
-    <string name="aqi_pm10">PM10</string>
-    <string name="aqi_ozone">O₃</string>
-    <string name="aqi_no2">NO₂</string>
-    <string name="aqi_so2">SO₂</string>
-    <string name="aqi_co">CO</string>
-    <string name="aqi_pollen_value">Polen %1$s</string>
-    <string name="aqi_unavailable">Hava kalitesi verileri kullanılamıyor</string>
 
     <string name="sun_moon_title">Güneş ve ay</string>
     <string name="sun_moon_daylight">Gün ışığı %1$s</string>
@@ -171,12 +135,6 @@
     <string name="moon_last_quarter">Son dördün</string>
     <string name="moon_waning_crescent">Küçülen hilal</string>
 
-    <string name="share_text_title">%1$s için hava durumu</string>
-    <string name="share_now">Şu an: %1$s, %2$s</string>
-    <string name="share_high_low">Yük. %1$s · Düş. %2$s</string>
-    <string name="share_wind">Rüzgâr: %1$s</string>
-    <string name="share_rain">Yağış: %1$s</string>
-    <string name="share_footer">Météo ile paylaşıldı</string>
 
     <string name="settings_appearance">Görünüm</string>
     <string name="settings_accent">Vurgu rengi</string>
@@ -215,47 +173,20 @@
 
     <string name="settings_language">Dil</string>
 
-    <string name="settings_units">Birimler</string>
-    <string name="settings_temperature_unit">Sıcaklık</string>
-    <string name="settings_wind_unit">Rüzgâr</string>
-    <string name="settings_precipitation_unit">Yağış</string>
-    <string name="settings_distance_unit">Mesafe</string>
-    <string name="settings_pressure_unit">Basınç</string>
-    <string name="settings_time_format">Saat biçimi</string>
-    <string name="settings_decimals">Sıcaklık ondalık basamakları</string>
-    <string name="unit_celsius">Celsius (°C)</string>
-    <string name="unit_fahrenheit">Fahrenheit (°F)</string>
-    <string name="wind_kmh">km/sa</string>
-    <string name="wind_mph">mi/sa</string>
-    <string name="wind_ms">m/s</string>
-    <string name="wind_knots">kn</string>
-    <string name="precip_mm">mm</string>
-    <string name="precip_inches">inç</string>
-    <string name="distance_km">km</string>
-    <string name="distance_miles">mil</string>
-    <string name="pressure_hpa">hPa</string>
-    <string name="pressure_inhg">inHg</string>
-    <string name="time_24h">24 saat</string>
-    <string name="time_12h">12 saat</string>
-    <string name="decimals_count">%1$d</string>
 
     <string name="settings_weather_display">Hava durumu ekranı</string>
     <string name="settings_show_alerts">Hava durumu uyarıları</string>
     <string name="settings_show_alerts_desc">Sıcaklık, rüzgar, yağmur ve UV uyarıları</string>
-    <string name="settings_show_air_quality">Hava kalitesi</string>
-    <string name="settings_show_air_quality_desc">AQI, kirleticiler ve polen</string>
 
     <string name="settings_data">Veriler</string>
     <string name="settings_cache_title">Kayıtlı tahminler</string>
-    <string name="settings_cache_count">Takip edilen şehirler: %1$d</string>
     <string name="settings_clear_cache_title">Hava durumu önbelleği temizlensin mi?</string>
     <string name="settings_clear_cache_text">Kayıtlı tahminler silinip yeniden indirilecek.</string>
     <string name="settings_reset">Tüm ayarları sıfırla</string>
     <string name="settings_reset_title">Tüm ayarlar sıfırlansın mı?</string>
-    <string name="settings_reset_text">Tema, renkler, birimler ve dil varsayılana döner. Kayıtlı şehirler korunur.</string>
+    <string name="settings_reset_text">Tema, renkler ve dil varsayılana döner. Kayıtlı şehirler korunur.</string>
     <string name="settings_reset_done">Ayarlar sıfırlandı</string>
     <string name="settings_replay_onboarding">Şehrimi yeniden bul</string>
-    <string name="settings_replay_onboarding_desc">Şehrinizi yeniden seçmek için mevcut konumunuzu kullanın</string>
     <string name="settings_about">Hakkında</string>
     <string name="settings_about_text">Hava durumu verileri Open-Meteo tarafından sağlanır. Arayüz Jetpack Compose ve Material 3 Expressive ile geliştirildi.</string>
     <string name="app_version">Sürüm %1$s</string>
@@ -286,4 +217,29 @@
 
     <string name="cd_weather_icon">Hava koşulları</string>
     <string name="cd_delete_city">%1$s kaldır</string>
+    <string name="advice_tip_count">Öneri: %1$d</string>
+    <string name="advice_umbrella_title">Şemsiye alın</string>
+    <string name="advice_umbrella_detail">Önümüzdeki 24 saatte yağış olasılığı %1$d%%.</string>
+    <string name="advice_storm_title">Fırtına riski</string>
+    <string name="advice_storm_detail">Gök gürültülü fırtına olabilir. Gevşek eşyaları sabitleyin ve korunaklı bir yere geçin.</string>
+    <string name="advice_snow_title">Kar bekleniyor</string>
+    <string name="advice_snow_detail">Yola daha fazla zaman ayırın ve kaymayan ayakkabı giyin.</string>
+    <string name="advice_jacket_title">Kalın ceket giyin</string>
+    <string name="advice_jacket_detail">Hissedilen %1$s. Dışarı çıkmadan önce ısının.</string>
+    <string name="advice_layers_title">Katmanlı giyinin</string>
+    <string name="advice_layers_detail">Hissedilen %1$s. İnce bir ceket yeterli olur.</string>
+    <string name="advice_heat_title">Sıcaklık uyarısı</string>
+    <string name="advice_heat_detail">En yüksek sıcaklık %1$s civarında. Gölgede kalın ve ağır efordan kaçının.</string>
+    <string name="advice_sunscreen_title">Güneş koruması</string>
+    <string name="advice_sunscreen_detail">UV indeksi %1$s seviyesine çıkıyor. Güneş kremi ve gözlük kullanın.</string>
+    <string name="advice_wind_title">Rüzgârlı olacak</string>
+    <string name="advice_wind_detail">%1$s değerine varan rüzgâr. Hafif eşyaları sabitleyin.</string>
+    <string name="advice_visibility_title">Görüş mesafesi düşük</string>
+    <string name="advice_visibility_detail">Sis yolculuğu yavaşlatabilir. Daha fazla zaman ayırın.</string>
+    <string name="advice_humidity_title">Nemli hava</string>
+    <string name="advice_humidity_detail">Nem %1$d%% seviyesine çıkıyor. Mola verin ve su için.</string>
+    <string name="advice_hydrate_title">Su için</string>
+    <string name="advice_hydrate_detail">Hissedilen %1$s. Düzenli olarak su için.</string>
+    <string name="advice_comfort_title">Havanın tadını çıkarın</string>
+    <string name="advice_comfort_detail">Koşullar sakin. Dışarı çıkmak için iyi bir zaman.</string>
 </resources>

@@ -51,12 +51,12 @@ fun OnboardingScreen(configViewModel: AppConfigVM) {
             saving = true
             onboardingViewModel.savePlace(
                 place = place,
-                onSaved = {
+                onSaved = { city ->
                   saving = false
                   configViewModel.completeOnboarding(
                       mode = AppConfigVM.START_MODE_LOCATION,
-                      latitude = place.latitude,
-                      longitude = place.longitude,
+                      latitude = city.latitude,
+                      longitude = city.longitude,
                   )
                 },
                 onError = {

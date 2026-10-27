@@ -7,8 +7,6 @@
     <string name="menu">Открыть меню</string>
     <string name="back">Назад</string>
     <string name="refresh">Обновить</string>
-    <string name="action_share">Поделиться</string>
-    <string name="share_chooser">Поделиться прогнозом</string>
 
     <string name="screen_weather">Погода</string>
     <string name="screen_search">Поиск</string>
@@ -121,41 +119,7 @@
     <string name="alert_fog_message">Ожидается плохая видимость. Ведите машину осторожно.</string>
 
     <string name="advice_title">Умные советы</string>
-    <string name="advice_umbrella_title">Возьмите зонт</string>
-    <string name="advice_umbrella_message">В ближайшие часы вероятен дождь.</string>
-    <string name="advice_jacket_title">Наденьте тёплую куртку</string>
-    <string name="advice_jacket_message">На улице будет холодно.</string>
-    <string name="advice_layers_title">Одевайтесь слоями</string>
-    <string name="advice_layers_message">Лёгкая куртка пригодится.</string>
-    <string name="advice_sunscreen_title">Защита от солнца</string>
-    <string name="advice_sunscreen_message">Сегодня высокий УФ-уровень.</string>
-    <string name="advice_wind_title">Будет ветрено</string>
-    <string name="advice_wind_message">Поможет ветрозащитный слой.</string>
-    <string name="advice_air_title">Низкое качество воздуха</string>
-    <string name="advice_air_message">Ограничьте интенсивные нагрузки на улице.</string>
-    <string name="advice_visibility_title">Пониженная видимость</string>
-    <string name="advice_visibility_message">Заложите больше времени на дорогу.</string>
-    <string name="advice_hydrate_title">Пейте достаточно воды</string>
-    <string name="advice_hydrate_message">Сегодня ожидается тепло.</string>
 
-    <string name="aqi_title">Качество воздуха</string>
-    <string name="aqi_good">Хорошее</string>
-    <string name="aqi_fair">Приемлемое</string>
-    <string name="aqi_moderate">Среднее</string>
-    <string name="aqi_poor">Плохое</string>
-    <string name="aqi_very_poor">Очень плохое</string>
-    <string name="aqi_extreme">Крайне плохое</string>
-    <string name="aqi_european">Европейский ИКВ</string>
-    <string name="aqi_us">Американский ИКВ</string>
-    <string name="aqi_value">%1$d · %2$s</string>
-    <string name="aqi_pm25">PM2,5</string>
-    <string name="aqi_pm10">PM10</string>
-    <string name="aqi_ozone">O₃</string>
-    <string name="aqi_no2">NO₂</string>
-    <string name="aqi_so2">SO₂</string>
-    <string name="aqi_co">CO</string>
-    <string name="aqi_pollen_value">Пыльца %1$s</string>
-    <string name="aqi_unavailable">Данные о качестве воздуха недоступны</string>
 
     <string name="sun_moon_title">Солнце и луна</string>
     <string name="sun_moon_daylight">Световой день %1$s</string>
@@ -171,12 +135,6 @@
     <string name="moon_last_quarter">Последняя четверть</string>
     <string name="moon_waning_crescent">Убывающий серп</string>
 
-    <string name="share_text_title">Погода: %1$s</string>
-    <string name="share_now">Сейчас: %1$s, %2$s</string>
-    <string name="share_high_low">Макс. %1$s · Мин. %2$s</string>
-    <string name="share_wind">Ветер: %1$s</string>
-    <string name="share_rain">Осадки: %1$s</string>
-    <string name="share_footer">Отправлено из Météo</string>
 
     <string name="settings_appearance">Внешний вид</string>
     <string name="settings_accent">Акцентный цвет</string>
@@ -215,47 +173,20 @@
 
     <string name="settings_language">Язык</string>
 
-    <string name="settings_units">Единицы</string>
-    <string name="settings_temperature_unit">Температура</string>
-    <string name="settings_wind_unit">Ветер</string>
-    <string name="settings_precipitation_unit">Осадки</string>
-    <string name="settings_distance_unit">Расстояние</string>
-    <string name="settings_pressure_unit">Давление</string>
-    <string name="settings_time_format">Формат времени</string>
-    <string name="settings_decimals">Знаки после запятой для температуры</string>
-    <string name="unit_celsius">Цельсий (°C)</string>
-    <string name="unit_fahrenheit">Фаренгейт (°F)</string>
-    <string name="wind_kmh">км/ч</string>
-    <string name="wind_mph">миль/ч</string>
-    <string name="wind_ms">м/с</string>
-    <string name="wind_knots">узлы</string>
-    <string name="precip_mm">мм</string>
-    <string name="precip_inches">дюймы</string>
-    <string name="distance_km">км</string>
-    <string name="distance_miles">мили</string>
-    <string name="pressure_hpa">гПа</string>
-    <string name="pressure_inhg">inHg</string>
-    <string name="time_24h">24 часа</string>
-    <string name="time_12h">12 часов</string>
-    <string name="decimals_count">%1$d</string>
 
     <string name="settings_weather_display">Экран погоды</string>
     <string name="settings_show_alerts">Оповещения о погоде</string>
     <string name="settings_show_alerts_desc">Предупреждения о жаре, ветре, дожде и УФ</string>
-    <string name="settings_show_air_quality">Качество воздуха</string>
-    <string name="settings_show_air_quality_desc">ИКВ, загрязнители и пыльца</string>
 
     <string name="settings_data">Данные</string>
     <string name="settings_cache_title">Сохранённые прогнозы</string>
-    <string name="settings_cache_count">Отслеживаемые города: %1$d</string>
     <string name="settings_clear_cache_title">Очистить кэш погоды?</string>
     <string name="settings_clear_cache_text">Сохранённые прогнозы будут удалены и загружены снова.</string>
     <string name="settings_reset">Сбросить все настройки</string>
     <string name="settings_reset_title">Сбросить все настройки?</string>
-    <string name="settings_reset_text">Тема, цвета, единицы и язык вернутся к значениям по умолчанию. Сохранённые города останутся.</string>
+    <string name="settings_reset_text">Тема, цвета и язык вернутся к значениям по умолчанию. Сохранённые города останутся.</string>
     <string name="settings_reset_done">Настройки сброшены</string>
     <string name="settings_replay_onboarding">Снова найти мой город</string>
-    <string name="settings_replay_onboarding_desc">Использовать текущее местоположение, чтобы снова выбрать город</string>
     <string name="settings_about">О приложении</string>
     <string name="settings_about_text">Данные о погоде предоставлены Open-Meteo. Интерфейс создан с помощью Jetpack Compose и Material 3 Expressive.</string>
     <string name="app_version">Версия %1$s</string>
@@ -286,4 +217,29 @@
 
     <string name="cd_weather_icon">Погодные условия</string>
     <string name="cd_delete_city">Удалить %1$s</string>
+    <string name="advice_tip_count">Советов: %1$d</string>
+    <string name="advice_umbrella_title">Возьмите зонт</string>
+    <string name="advice_umbrella_detail">До %1$d%% осадков в ближайшие 24 часа.</string>
+    <string name="advice_storm_title">Риск грозы</string>
+    <string name="advice_storm_detail">Возможны грозы. Закрепите незакреплённые предметы и укройтесь.</string>
+    <string name="advice_snow_title">Ожидается снег</string>
+    <string name="advice_snow_detail">Заложите больше времени и наденьте обувь с хорошим сцеплением.</string>
+    <string name="advice_jacket_title">Наденьте тёплую куртку</string>
+    <string name="advice_jacket_detail">Ощущается как %1$s. Оденьтесь теплее перед выходом.</string>
+    <string name="advice_layers_title">Одевайтесь слоями</string>
+    <string name="advice_layers_detail">Ощущается как %1$s. Достаточно лёгкой куртки.</string>
+    <string name="advice_heat_title">Предупреждение о жаре</string>
+    <string name="advice_heat_detail">Максимумы около %1$s. Держитесь в тени и избегайте сильной нагрузки.</string>
+    <string name="advice_sunscreen_title">Защита от солнца</string>
+    <string name="advice_sunscreen_detail">УФ-индекс достигает %1$s. Используйте крем и солнцезащитные очки.</string>
+    <string name="advice_wind_title">Будет ветрено</string>
+    <string name="advice_wind_detail">Порывы до %1$s. Закрепите лёгкие предметы.</string>
+    <string name="advice_visibility_title">Сниженная видимость</string>
+    <string name="advice_visibility_detail">Туман может замедлить поездку. Выезжайте заранее.</string>
+    <string name="advice_humidity_title">Душно</string>
+    <string name="advice_humidity_detail">Влажность достигает %1$d%%. Делайте паузы и пейте воду.</string>
+    <string name="advice_hydrate_title">Пейте воду</string>
+    <string name="advice_hydrate_detail">Ощущается как %1$s. Пейте воду регулярно.</string>
+    <string name="advice_comfort_title">Наслаждайтесь погодой</string>
+    <string name="advice_comfort_detail">Условия спокойные. Хорошее время для прогулки.</string>
 </resources>

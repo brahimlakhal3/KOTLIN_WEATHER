@@ -23,14 +23,5 @@ object AppConfigKeys {
   val LANGUAGE = stringPreferencesKey("language")
   val TEXT_SIZE = stringPreferencesKey("text_size")
 
-  val TEMPERATURE_UNIT = stringPreferencesKey("temperature_unit")
-  val WIND_UNIT = stringPreferencesKey("wind_unit")
-  val PRECIPITATION_UNIT = stringPreferencesKey("precipitation_unit")
-  val DISTANCE_UNIT = stringPreferencesKey("distance_unit")
-  val PRESSURE_UNIT = stringPreferencesKey("pressure_unit")
-  val TIME_FORMAT = stringPreferencesKey("time_format")
-  val TEMPERATURE_DECIMALS = stringPreferencesKey("temperature_decimals")
-
   val SHOW_ALERTS = stringPreferencesKey("show_alerts")
-  val SHOW_AIR_QUALITY = stringPreferencesKey("show_air_quality")
 }

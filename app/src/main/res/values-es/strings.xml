@@ -7,8 +7,6 @@
     <string name="menu">Abrir el menú</string>
     <string name="back">Atrás</string>
     <string name="refresh">Actualizar</string>
-    <string name="action_share">Compartir</string>
-    <string name="share_chooser">Compartir el pronóstico</string>
 
     <string name="screen_weather">Clima</string>
     <string name="screen_search">Buscar</string>
@@ -121,41 +119,7 @@
     <string name="alert_fog_message">Se espera poca visibilidad. Conduce con cuidado.</string>
 
     <string name="advice_title">Consejos inteligentes</string>
-    <string name="advice_umbrella_title">Lleva paraguas</string>
-    <string name="advice_umbrella_message">Es probable que llueva en las próximas horas.</string>
-    <string name="advice_jacket_title">Lleva una chaqueta abrigada</string>
-    <string name="advice_jacket_message">Hará frío fuera.</string>
-    <string name="advice_layers_title">Vístete por capas</string>
-    <string name="advice_layers_message">Una chaqueta ligera será útil.</string>
-    <string name="advice_sunscreen_title">Protección solar</string>
-    <string name="advice_sunscreen_message">El nivel de UV es alto hoy.</string>
-    <string name="advice_wind_title">Va a hacer viento</string>
-    <string name="advice_wind_message">Una capa cortavientos te ayudará.</string>
-    <string name="advice_air_title">La calidad del aire es baja</string>
-    <string name="advice_air_message">Limita el esfuerzo intenso al aire libre.</string>
-    <string name="advice_visibility_title">Visibilidad reducida</string>
-    <string name="advice_visibility_message">Reserva más tiempo para desplazarte.</string>
-    <string name="advice_hydrate_title">Mantente hidratado</string>
-    <string name="advice_hydrate_message">Hoy se espera calor.</string>
 
-    <string name="aqi_title">Calidad del aire</string>
-    <string name="aqi_good">Buena</string>
-    <string name="aqi_fair">Aceptable</string>
-    <string name="aqi_moderate">Moderada</string>
-    <string name="aqi_poor">Mala</string>
-    <string name="aqi_very_poor">Muy mala</string>
-    <string name="aqi_extreme">Extremadamente mala</string>
-    <string name="aqi_european">ICA europeo</string>
-    <string name="aqi_us">ICA estadounidense</string>
-    <string name="aqi_value">%1$d · %2$s</string>
-    <string name="aqi_pm25">PM2,5</string>
-    <string name="aqi_pm10">PM10</string>
-    <string name="aqi_ozone">O₃</string>
-    <string name="aqi_no2">NO₂</string>
-    <string name="aqi_so2">SO₂</string>
-    <string name="aqi_co">CO</string>
-    <string name="aqi_pollen_value">Polen %1$s</string>
-    <string name="aqi_unavailable">Datos de calidad del aire no disponibles</string>
 
     <string name="sun_moon_title">Sol y luna</string>
     <string name="sun_moon_daylight">Luz diurna %1$s</string>
@@ -171,12 +135,6 @@
     <string name="moon_last_quarter">Cuarto menguante</string>
     <string name="moon_waning_crescent">Luna menguante</string>
 
-    <string name="share_text_title">El tiempo en %1$s</string>
-    <string name="share_now">Ahora: %1$s, %2$s</string>
-    <string name="share_high_low">Máx. %1$s · Mín. %2$s</string>
-    <string name="share_wind">Viento: %1$s</string>
-    <string name="share_rain">Precipitación: %1$s</string>
-    <string name="share_footer">Compartido desde Météo</string>
 
     <string name="settings_appearance">Apariencia</string>
     <string name="settings_accent">Color de acento</string>
@@ -215,47 +173,20 @@
 
     <string name="settings_language">Idioma</string>
 
-    <string name="settings_units">Unidades</string>
-    <string name="settings_temperature_unit">Temperatura</string>
-    <string name="settings_wind_unit">Viento</string>
-    <string name="settings_precipitation_unit">Precipitación</string>
-    <string name="settings_distance_unit">Distancia</string>
-    <string name="settings_pressure_unit">Presión</string>
-    <string name="settings_time_format">Formato de hora</string>
-    <string name="settings_decimals">Decimales de temperatura</string>
-    <string name="unit_celsius">Celsius (°C)</string>
-    <string name="unit_fahrenheit">Fahrenheit (°F)</string>
-    <string name="wind_kmh">km/h</string>
-    <string name="wind_mph">mi/h</string>
-    <string name="wind_ms">m/s</string>
-    <string name="wind_knots">nudos</string>
-    <string name="precip_mm">mm</string>
-    <string name="precip_inches">pulgadas</string>
-    <string name="distance_km">km</string>
-    <string name="distance_miles">millas</string>
-    <string name="pressure_hpa">hPa</string>
-    <string name="pressure_inhg">inHg</string>
-    <string name="time_24h">24 horas</string>
-    <string name="time_12h">12 horas</string>
-    <string name="decimals_count">%1$d</string>
 
     <string name="settings_weather_display">Pantalla del clima</string>
     <string name="settings_show_alerts">Avisos meteorológicos</string>
     <string name="settings_show_alerts_desc">Avisos de calor, viento, lluvia y UV</string>
-    <string name="settings_show_air_quality">Calidad del aire</string>
-    <string name="settings_show_air_quality_desc">ICA, contaminantes y polen</string>
 
     <string name="settings_data">Datos</string>
     <string name="settings_cache_title">Pronósticos guardados</string>
-    <string name="settings_cache_count">Ciudades guardadas: %1$d</string>
     <string name="settings_clear_cache_title">¿Borrar la caché del clima?</string>
     <string name="settings_clear_cache_text">Los pronósticos guardados se eliminarán y se descargarán de nuevo.</string>
     <string name="settings_reset">Restablecer todos los ajustes</string>
     <string name="settings_reset_title">¿Restablecer todos los ajustes?</string>
-    <string name="settings_reset_text">El tema, los colores, las unidades y el idioma vuelven a sus valores predeterminados. Las ciudades guardadas se conservan.</string>
+    <string name="settings_reset_text">El tema, los colores y el idioma vuelven a sus valores predeterminados. Las ciudades guardadas se conservan.</string>
     <string name="settings_reset_done">Ajustes restablecidos</string>
     <string name="settings_replay_onboarding">Volver a encontrar mi ciudad</string>
-    <string name="settings_replay_onboarding_desc">Usar tu ubicación actual para elegir tu ciudad de nuevo</string>
     <string name="settings_about">Acerca de</string>
     <string name="settings_about_text">Datos meteorológicos proporcionados por Open-Meteo. Interfaz creada con Jetpack Compose y Material 3 Expressive.</string>
     <string name="app_version">Versión %1$s</string>
@@ -286,4 +217,29 @@
 
     <string name="cd_weather_icon">Condiciones meteorológicas</string>
     <string name="cd_delete_city">Quitar %1$s</string>
+    <string name="advice_tip_count">Consejos: %1$d</string>
+    <string name="advice_umbrella_title">Lleva paraguas</string>
+    <string name="advice_umbrella_detail">Hasta %1$d%% de lluvia en las próximas 24 horas.</string>
+    <string name="advice_storm_title">Riesgo de tormenta</string>
+    <string name="advice_storm_detail">Pueden producirse tormentas. Asegura objetos sueltos y busca refugio.</string>
+    <string name="advice_snow_title">Nieve prevista</string>
+    <string name="advice_snow_detail">Reserva más tiempo y usa calzado con buen agarre.</string>
+    <string name="advice_jacket_title">Usa una chaqueta abrigada</string>
+    <string name="advice_jacket_detail">Sensación de %1$s. Abrígate antes de salir.</string>
+    <string name="advice_layers_title">Viste por capas</string>
+    <string name="advice_layers_detail">Sensación de %1$s. Una chaqueta ligera será suficiente.</string>
+    <string name="advice_heat_title">Aviso de calor</string>
+    <string name="advice_heat_detail">Máximas cercanas a %1$s. Busca sombra y evita esfuerzos intensos.</string>
+    <string name="advice_sunscreen_title">Protección solar</string>
+    <string name="advice_sunscreen_detail">El índice UV llega a %1$s. Usa protector solar y gafas.</string>
+    <string name="advice_wind_title">Hará viento</string>
+    <string name="advice_wind_detail">Rachas de hasta %1$s. Asegura los objetos ligeros.</string>
+    <string name="advice_visibility_title">Visibilidad reducida</string>
+    <string name="advice_visibility_detail">La niebla puede retrasar los viajes. Sal con más tiempo.</string>
+    <string name="advice_humidity_title">Ambiente húmedo</string>
+    <string name="advice_humidity_detail">La humedad llega al %1$d%%. Haz pausas y bebe agua.</string>
+    <string name="advice_hydrate_title">Mantente hidratado</string>
+    <string name="advice_hydrate_detail">Sensación de %1$s. Bebe agua con regularidad.</string>
+    <string name="advice_comfort_title">Disfruta del tiempo</string>
+    <string name="advice_comfort_detail">Las condiciones son tranquilas. Buen momento para salir.</string>
 </resources>

@@ -28,7 +28,6 @@ import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Storage
-import androidx.compose.material.icons.outlined.Straighten
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -82,12 +81,6 @@ import com.brahim.meteo.ui.theme.AccentColor
 import com.brahim.meteo.ui.theme.CornerStyle
 import com.brahim.meteo.ui.theme.TextSize
 import com.brahim.meteo.ui.theme.ThemeMode
-import com.brahim.meteo.util.DistanceUnit
-import com.brahim.meteo.util.PrecipitationUnit
-import com.brahim.meteo.util.PressureUnit
-import com.brahim.meteo.util.TemperatureUnit
-import com.brahim.meteo.util.TimeFormat
-import com.brahim.meteo.util.WindUnit
 import com.brahim.meteo.viewModel.AppConfigVM
 import com.brahim.meteo.viewModel.SettingsVM
 import kotlinx.coroutines.launch
@@ -240,64 +233,6 @@ fun SettingsScreen(
 
       Reveal(index = 2) {
         SettingsCard(
-            icon = Icons.Outlined.Straighten,
-            title = stringResource(R.string.settings_units),
-            accentIndex = 2,
-        ) {
-          Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            UnitChoice(
-                title = stringResource(R.string.settings_temperature_unit),
-                options = TemperatureUnit.entries.map { it.name to stringResource(it.labelRes) },
-                selected = state.units.temperature.name,
-                onSelect = configViewModel::setTemperatureUnit,
-            )
-            UnitChoice(
-                title = stringResource(R.string.settings_wind_unit),
-                options = WindUnit.entries.map { it.name to stringResource(it.labelRes) },
-                selected = state.units.wind.name,
-                onSelect = configViewModel::setWindUnit,
-            )
-            UnitChoice(
-                title = stringResource(R.string.settings_precipitation_unit),
-                options =
-                    PrecipitationUnit.entries.map { it.name to stringResource(it.labelRes) },
-                selected = state.units.precipitation.name,
-                onSelect = configViewModel::setPrecipitationUnit,
-            )
-            UnitChoice(
-                title = stringResource(R.string.settings_distance_unit),
-                options = DistanceUnit.entries.map { it.name to stringResource(it.labelRes) },
-                selected = state.units.distance.name,
-                onSelect = configViewModel::setDistanceUnit,
-            )
-            UnitChoice(
-                title = stringResource(R.string.settings_pressure_unit),
-                options = PressureUnit.entries.map { it.name to stringResource(it.labelRes) },
-                selected = state.units.pressure.name,
-                onSelect = configViewModel::setPressureUnit,
-            )
-            UnitChoice(
-                title = stringResource(R.string.settings_time_format),
-                options = TimeFormat.entries.map { it.name to stringResource(it.labelRes) },
-                selected = state.units.timeFormat.name,
-                onSelect = configViewModel::setTimeFormat,
-            )
-            UnitChoice(
-                title = stringResource(R.string.settings_decimals),
-                options =
-                    (0..2).map { decimals ->
-                        decimals.toString() to
-                            stringResource(R.string.decimals_count, decimals)
-                    },
-                selected = state.temperatureDecimals.toString(),
-                onSelect = { value -> configViewModel.setTemperatureDecimals(value.toInt()) },
-            )
-          }
-        }
-      }
-
-      Reveal(index = 3) {
-        SettingsCard(
             icon = Icons.Outlined.Tune,
             title = stringResource(R.string.settings_weather_display),
             accentIndex = 0,
@@ -309,24 +244,17 @@ fun SettingsScreen(
                 checked = state.showAlerts,
                 onCheckedChange = configViewModel::setShowAlerts,
             )
-            SettingSwitch(
-                title = stringResource(R.string.settings_show_air_quality),
-                description = stringResource(R.string.settings_show_air_quality_desc),
-                checked = state.showAirQuality,
-                onCheckedChange = configViewModel::setShowAirQuality,
-            )
           }
         }
       }
 
-      Reveal(index = 4) {
+      Reveal(index = 3) {
         SettingsCard(
             icon = Icons.Outlined.Storage,
             title = stringResource(R.string.settings_data),
             accentIndex = 1,
         ) {
           ListItem(
-              supportingContent = { Text(stringResource(R.string.settings_cache_count, cityCount)) },
               leadingContent = { Icon(Icons.Outlined.DeleteSweep, contentDescription = null) },
               trailingContent = {
                 FilledTonalButton(
@@ -341,7 +269,6 @@ fun SettingsScreen(
             Text(stringResource(R.string.settings_cache_title))
           }
           ListItem(
-              supportingContent = { Text(stringResource(R.string.settings_reset_text)) },
               leadingContent = { Icon(Icons.Outlined.RestartAlt, contentDescription = null) },
               trailingContent = {
                 TextButton(onClick = { confirmReset = true }) {
@@ -353,9 +280,6 @@ fun SettingsScreen(
             Text(stringResource(R.string.settings_reset))
           }
           ListItem(
-              supportingContent = {
-                Text(stringResource(R.string.settings_replay_onboarding_desc))
-              },
               leadingContent = { Icon(Icons.Outlined.Cloud, contentDescription = null) },
               trailingContent = {
                 TextButton(onClick = { confirmReplay = true }) {
@@ -369,7 +293,7 @@ fun SettingsScreen(
         }
       }
 
-      Reveal(index = 5) {
+      Reveal(index = 4) {
         SettingsCard(
             icon = Icons.Outlined.Info,
             title = stringResource(R.string.settings_about),
@@ -572,26 +496,6 @@ private fun SettingSwitch(
 }
 
 @Composable
-private fun UnitChoice(
-    title: String,
-    options: List<Pair<String, String>>,
-    selected: String,
-    onSelect: (String) -> Unit,
-) {
-  SettingBlock(title = title) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      items(items = options, key = { option -> option.first }) { (value, label) ->
-        FilterChip(
-            selected = selected == value,
-            onClick = { onSelect(value) },
-            label = { Text(label) },
-        )
-      }
-    }
-  }
-}
-
-@Composable
 private fun AccentSwatch(accent: AccentColor, selected: Boolean, onClick: () -> Unit) {
   val label = stringResource(accent.labelRes)
   val checkColor = if (accent.base.luminance() > 0.55f) Color(0xFF171717) else Color.White
@@ -674,48 +578,4 @@ private val AccentColor.labelRes: Int
         AccentColor.INDIGO -> R.string.accent_indigo
         AccentColor.PEACH -> R.string.accent_peach
         AccentColor.GRAPHITE -> R.string.accent_graphite
-      }
-
-private val TemperatureUnit.labelRes: Int
-  get() =
-      when (this) {
-        TemperatureUnit.CELSIUS -> R.string.unit_celsius
-        TemperatureUnit.FAHRENHEIT -> R.string.unit_fahrenheit
-      }
-
-private val WindUnit.labelRes: Int
-  get() =
-      when (this) {
-        WindUnit.KILOMETRES_PER_HOUR -> R.string.wind_kmh
-        WindUnit.MILES_PER_HOUR -> R.string.wind_mph
-        WindUnit.METRES_PER_SECOND -> R.string.wind_ms
-        WindUnit.KNOTS -> R.string.wind_knots
-      }
-
-private val PrecipitationUnit.labelRes: Int
-  get() =
-      when (this) {
-        PrecipitationUnit.MILLIMETRES -> R.string.precip_mm
-        PrecipitationUnit.INCHES -> R.string.precip_inches
-      }
-
-private val DistanceUnit.labelRes: Int
-  get() =
-      when (this) {
-        DistanceUnit.KILOMETRES -> R.string.distance_km
-        DistanceUnit.MILES -> R.string.distance_miles
-      }
-
-private val PressureUnit.labelRes: Int
-  get() =
-      when (this) {
-        PressureUnit.HECTOPASCALS -> R.string.pressure_hpa
-        PressureUnit.INCHES_OF_MERCURY -> R.string.pressure_inhg
-      }
-
-private val TimeFormat.labelRes: Int
-  get() =
-      when (this) {
-        TimeFormat.HOUR_24 -> R.string.time_24h
-        TimeFormat.HOUR_12 -> R.string.time_12h
       }

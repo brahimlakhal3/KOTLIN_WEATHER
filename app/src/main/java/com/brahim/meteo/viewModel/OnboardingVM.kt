@@ -9,15 +9,19 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.brahim.meteo.MeteoApplication
 import com.brahim.meteo.data.MeteoRepository
+import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.Place
 import kotlinx.coroutines.launch
 
 class OnboardingVM(private val repository: MeteoRepository) : ViewModel() {
 
-  fun savePlace(place: Place, onSaved: () -> Unit, onError: () -> Unit = {}) {
+  fun savePlace(place: Place, onSaved: (City) -> Unit, onError: () -> Unit = {}) {
     viewModelScope.launch {
-      runCatching { repository.saveCity(place) }
-          .onSuccess { onSaved() }
+      runCatching {
+            repository.saveCity(place)
+            repository.findCity(place.latitude, place.longitude)
+          }
+          .onSuccess { city -> if (city != null) onSaved(city) else onError() }
           .onFailure { onError() }
     }
   }
