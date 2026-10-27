@@ -32,6 +32,7 @@
 - Native Android splash hand-off plus a one-second animated Compose splash using Material 3 Expressive shapes and motion.
 - App content and onboarding warm up underneath the splash, so the first interactive screen is ready without a blank frame.
 - Loading states stay visible for at least 500 ms, avoiding a one-frame spinner flash on fast cache reads.
+- Adaptive launcher icon built with a scalloped sun, puffy cloud, and sparkle from the Material 3 Expressive shape language.
 
 ###  First-Launch Onboarding
 - Asks for the current location immediately and opens that city's forecast directly — no location/search chooser.
