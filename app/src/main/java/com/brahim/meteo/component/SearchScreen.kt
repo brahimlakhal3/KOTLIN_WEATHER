@@ -61,6 +61,7 @@ import com.brahim.meteo.element.LoadingState
 import com.brahim.meteo.element.PlaceCard
 import com.brahim.meteo.element.StateMessage
 import com.brahim.meteo.ui.rememberLocationRequest
+import com.brahim.meteo.ui.rememberMinimumLoading
 import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.viewModel.SearchVM
 
@@ -73,6 +74,7 @@ fun SearchScreen(
 ) {
   val viewModel: SearchVM = viewModel(factory = SearchVM.Factory)
   val state by viewModel.state.collectAsStateWithLifecycle()
+  val showSearching = rememberMinimumLoading(state.isSearching)
   val keyboard = LocalSoftwareKeyboardController.current
   val animations = LocalAnimationsEnabled.current
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -158,7 +160,7 @@ fun SearchScreen(
       )
 
       AnimatedVisibility(
-          visible = state.isSearching,
+          visible = showSearching,
           enter = if (animations) fadeIn() + expandVertically() else EnterTransition.None,
           exit = if (animations) fadeOut() + shrinkVertically() else ExitTransition.None,
       ) {
@@ -199,13 +201,13 @@ fun SearchScreen(
                 title = stringResource(R.string.state_error_title),
                 message = stringResource(R.string.state_error_hint),
             )
+        showSearching -> LoadingState(message = stringResource(R.string.state_loading))
         state.hasSearched ->
             StateMessage(
                 icon = Icons.Outlined.LocationOn,
                 title = stringResource(R.string.search_no_result_title),
                 message = stringResource(R.string.search_no_result_hint),
             )
-        state.isSearching -> LoadingState(message = stringResource(R.string.state_loading))
         else ->
             StateMessage(
                 icon = Icons.Outlined.Search,

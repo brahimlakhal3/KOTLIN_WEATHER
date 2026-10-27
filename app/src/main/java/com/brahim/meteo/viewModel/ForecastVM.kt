@@ -85,7 +85,11 @@ class ForecastVM(
                 hasError = status.hasError,
             )
           }
-          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(REPLAY_MILLIS), ForecastUiState())
+          .stateIn(
+              viewModelScope,
+              SharingStarted.WhileSubscribed(REPLAY_MILLIS),
+              ForecastUiState(isSyncing = true),
+          )
 
   init {
     viewModelScope.launch {

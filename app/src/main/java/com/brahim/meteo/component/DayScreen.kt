@@ -59,6 +59,7 @@ import com.brahim.meteo.element.sunTimes
 import com.brahim.meteo.element.text
 import com.brahim.meteo.element.weatherMetrics
 import com.brahim.meteo.ui.currentLocale
+import com.brahim.meteo.ui.rememberMinimumLoading
 import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.ui.theme.Motion
 import com.brahim.meteo.util.dayLabel
@@ -85,6 +86,7 @@ fun DayScreen(
 ) {
   val viewModel: DayVM = viewModel(factory = DayVM.factory(latitude, longitude, epochDay))
   val state by viewModel.state.collectAsStateWithLifecycle()
+  val showLoading = rememberMinimumLoading(state.hours.isEmpty())
   val animations = LocalAnimationsEnabled.current
   val locale = currentLocale()
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -145,7 +147,7 @@ fun DayScreen(
         )
       },
   ) { innerPadding ->
-    if (state.hours.isEmpty()) {
+    if (showLoading) {
       Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
         LoadingState(message = stringResource(R.string.state_loading))
       }

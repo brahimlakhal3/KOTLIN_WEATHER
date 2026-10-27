@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brahim.meteo.R
 import com.brahim.meteo.element.WeatherIcon
 import com.brahim.meteo.ui.rememberLocationRequest
+import com.brahim.meteo.ui.rememberMinimumLoading
 import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.viewModel.AppConfigVM
 import com.brahim.meteo.viewModel.OnboardingVM
@@ -72,6 +73,7 @@ fun OnboardingScreen(configViewModel: AppConfigVM) {
   LaunchedEffect(Unit) { locationRequest.request() }
 
   val busy = locationRequest.isLoading || saving
+  val showBusy = rememberMinimumLoading(busy)
   val startSearch = {
     if (!busy) {
       configViewModel.completeOnboarding(AppConfigVM.START_MODE_SEARCH)
@@ -118,7 +120,7 @@ fun OnboardingScreen(configViewModel: AppConfigVM) {
 
       Spacer(modifier = Modifier.height(28.dp))
 
-      if (busy) {
+      if (showBusy) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
             color = MaterialTheme.colorScheme.primary,

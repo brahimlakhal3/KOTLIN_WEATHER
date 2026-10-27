@@ -52,6 +52,7 @@ import com.brahim.meteo.element.SunMoonCard
 import com.brahim.meteo.element.WeatherAlertsCard
 import com.brahim.meteo.element.weatherMetrics
 import com.brahim.meteo.ui.currentLocale
+import com.brahim.meteo.ui.rememberMinimumLoading
 import com.brahim.meteo.util.dayLabel
 import com.brahim.meteo.util.formatHour
 import com.brahim.meteo.util.formatShort
@@ -88,6 +89,8 @@ fun ForecastScreen(
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
   val errorMessage = stringResource(R.string.snack_error)
   val showAlerts = config?.showAlerts ?: true
+  val showLoading = rememberMinimumLoading(state.isLoading)
+  val showSyncing = rememberMinimumLoading(state.isSyncing)
 
   LaunchedEffect(state.hasError) {
     if (state.hasError && state.hasContent) snackbarHostState.showSnackbar(errorMessage)
@@ -121,7 +124,7 @@ fun ForecastScreen(
             },
             navigationIcon = { BackButton(onClick = onBack) },
             actions = {
-              RefreshButton(isSyncing = state.isSyncing, onRefresh = viewModel::refresh)
+              RefreshButton(isSyncing = showSyncing, onRefresh = viewModel::refresh)
             },
             colors = appBarColors(),
             scrollBehavior = scrollBehavior,
@@ -129,7 +132,7 @@ fun ForecastScreen(
       },
   ) { innerPadding ->
     when {
-      state.isLoading ->
+      showLoading ->
           Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             LoadingState(message = stringResource(R.string.state_loading))
           }
@@ -148,7 +151,7 @@ fun ForecastScreen(
           }
       else ->
           PullToRefreshBox(
-              isRefreshing = state.isSyncing,
+              isRefreshing = showSyncing,
               onRefresh = viewModel::refresh,
               modifier = Modifier.padding(innerPadding).fillMaxSize(),
           ) {

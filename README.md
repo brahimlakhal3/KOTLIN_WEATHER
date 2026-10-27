@@ -29,8 +29,9 @@
 ##  Key Features
 
 ###  Expressive Launch
-- Native Android splash hand-off plus a lightweight animated Compose splash using Material 3 Expressive shapes and motion.
+- Native Android splash hand-off plus a one-second animated Compose splash using Material 3 Expressive shapes and motion.
 - App content and onboarding warm up underneath the splash, so the first interactive screen is ready without a blank frame.
+- Loading states stay visible for at least 500 ms, avoiding a one-frame spinner flash on fast cache reads.
 
 ###  First-Launch Onboarding
 - Asks for the current location immediately and opens that city's forecast directly — no location/search chooser.

@@ -50,7 +50,7 @@ fun MainScreen() {
   var splashFinished by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(Unit) {
-    delay(SPLASH_MIN_MILLIS)
+    delay(SPLASH_HOLD_MILLIS)
     splashFinished = true
   }
 
@@ -116,8 +116,9 @@ fun MainScreen() {
   }
 }
 
-private const val SPLASH_MIN_MILLIS = 850L
-private const val SPLASH_EXIT_MILLIS = 420
+private const val SPLASH_TOTAL_MILLIS = 1_000L
+private const val SPLASH_EXIT_MILLIS = 300
+private const val SPLASH_HOLD_MILLIS = SPLASH_TOTAL_MILLIS - SPLASH_EXIT_MILLIS
 
 @Composable
 private fun SystemBars(darkTheme: Boolean, activity: Activity?) {
