@@ -76,8 +76,9 @@ fun HeroWeatherCard(
     pulse = 0.5f
   }
 
-  val glass = MaterialTheme.colorScheme.surface.copy(alpha = 0.22f)
-  val border = Color.White.copy(alpha = 0.30f)
+  // A dark glass panel keeps the white readout legible on top of every sky palette.
+  val glass = Color.Black.copy(alpha = 0.26f)
+  val border = Color.White.copy(alpha = 0.22f)
   val content = Color.White
 
   Surface(
