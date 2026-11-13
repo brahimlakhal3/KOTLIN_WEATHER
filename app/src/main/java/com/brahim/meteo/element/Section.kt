@@ -3,6 +3,7 @@ package com.brahim.meteo.element
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
 import com.brahim.meteo.ui.theme.Motion
+import com.brahim.meteo.util.formatTemperature
 
 @Composable
 fun SectionHeader(title: String, modifier: Modifier = Modifier, trailing: String? = null) {
@@ -109,4 +111,34 @@ fun Reveal(modifier: Modifier = Modifier, index: Int = 0, content: @Composable (
   ) {
     content()
   }
+}
+
+/**
+ * A temperature readout that counts from the previous value to the new one.
+ *
+ * The count-up makes a refreshed forecast feel alive instead of simply swapping digits.
+ */
+@Composable
+fun AnimatedTemperature(
+    celsius: Double,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    color: Color = LocalContentColor.current,
+) {
+  if (!LocalAnimationsEnabled.current) {
+    Text(text = formatTemperature(celsius), style = style, modifier = modifier, color = color)
+    return
+  }
+  val animated by
+      animateFloatAsState(
+          targetValue = celsius.toFloat(),
+          animationSpec = Motion.settle,
+          label = "temperature",
+      )
+  Text(
+      text = formatTemperature(animated.toDouble()),
+      style = style,
+      modifier = modifier,
+      color = color,
+  )
 }

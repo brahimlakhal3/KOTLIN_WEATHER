@@ -1,5 +1,6 @@
 package com.brahim.meteo.data
 
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.ForecastPayload
 import com.brahim.meteo.data.model.HourlyForecast
@@ -34,7 +35,27 @@ class WeatherApi(private val client: HttpClient = createClient()) {
                   parameter("daily", DAILY_FIELDS)
                 }
                 .bodyAsText()
-        parseForecast(payload)
+        val forecast = parseForecast(payload)
+        val airQuality = runCatching { fetchAirQuality(latitude, longitude) }.getOrNull()
+        forecast.copy(airQuality = airQuality)
+      }
+
+  /**
+   * Reads the current air quality from the Open-Meteo air quality endpoint. The endpoint is
+   * optional: when it is unavailable the rest of the forecast still works.
+   */
+  suspend fun fetchAirQuality(latitude: Double, longitude: Double): AirQuality? =
+      withContext(Dispatchers.IO) {
+        val payload =
+            client
+                .get(AIR_QUALITY_URL) {
+                  parameter("latitude", latitude)
+                  parameter("longitude", longitude)
+                  parameter("timezone", TIMEZONE_AUTO)
+                  parameter("current", AIR_QUALITY_FIELDS)
+                }
+                .bodyAsText()
+        parseAirQuality(payload)
       }
 
   suspend fun searchPlaces(query: String, language: String): List<Place> =
@@ -81,6 +102,7 @@ class WeatherApi(private val client: HttpClient = createClient()) {
                 visibility = hourlyJson.doubleAt("visibility", index),
                 dewPoint = hourlyJson.doubleAt("dew_point_2m", index),
                 surfacePressure = hourlyJson.doubleAt("surface_pressure", index),
+                cloudCover = hourlyJson.doubleAt("cloud_cover", index),
             )
       }
     }
@@ -101,11 +123,30 @@ class WeatherApi(private val client: HttpClient = createClient()) {
                 sunrise = dailyJson.instantAt("sunrise", index, zone),
                 sunset = dailyJson.instantAt("sunset", index, zone),
                 uvIndexMax = dailyJson.doubleAt("uv_index_max", index),
+                precipitationProbabilityMax = dailyJson.intAt("precipitation_probability_max", index),
+                windSpeedMax = dailyJson.doubleAt("wind_speed_10m_max", index),
+                windGustMax = dailyJson.doubleAt("wind_gusts_10m_max", index),
             )
       }
     }
 
     return ForecastPayload(hourly = hourly, daily = daily)
+  }
+
+  private fun parseAirQuality(payload: String): AirQuality? {
+    val current = JSONObject(payload).optJSONObject("current") ?: return null
+    val quality =
+        AirQuality(
+            usAqi = current.doubleOrNull("us_aqi"),
+            europeanAqi = current.doubleOrNull("european_aqi"),
+            pm25 = current.doubleOrNull("pm2_5"),
+            pm10 = current.doubleOrNull("pm10"),
+            ozone = current.doubleOrNull("ozone"),
+            nitrogenDioxide = current.doubleOrNull("nitrogen_dioxide"),
+            sulphurDioxide = current.doubleOrNull("sulphur_dioxide"),
+            carbonMonoxide = current.doubleOrNull("carbon_monoxide"),
+        )
+    return quality.takeIf { value -> !value.isEmpty }
   }
 
   private fun parsePlaces(payload: String): List<Place> {
@@ -167,8 +208,9 @@ class WeatherApi(private val client: HttpClient = createClient()) {
   companion object {
     private const val FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
     private const val GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
+    private const val AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
     private const val TIMEZONE_AUTO = "auto"
-    private const val FORECAST_DAYS = 7
+    private const val FORECAST_DAYS = 10
     private const val SEARCH_COUNT = 12
     private const val FORMAT_JSON = "json"
     private const val UNKNOWN_CODE = -1
@@ -177,11 +219,14 @@ class WeatherApi(private val client: HttpClient = createClient()) {
     private const val HOURLY_FIELDS =
         "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation," +
             "precipitation_probability,weather_code,is_day,wind_speed_10m,wind_gusts_10m," +
-            "wind_direction_10m,visibility,dew_point_2m,surface_pressure"
+            "wind_direction_10m,visibility,dew_point_2m,surface_pressure,cloud_cover"
 
     private const val DAILY_FIELDS =
         "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,sunrise,sunset," +
-            "uv_index_max"
+            "uv_index_max,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max"
+
+    private const val AIR_QUALITY_FIELDS =
+        "us_aqi,european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone"
 
     private fun createClient() =
         HttpClient(CIO) {

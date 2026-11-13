@@ -242,4 +242,33 @@
     <string name="advice_hydrate_detail">Ощущается как %1$s. Пейте воду регулярно.</string>
     <string name="advice_comfort_title">Наслаждайтесь погодой</string>
     <string name="advice_comfort_detail">Условия спокойные. Хорошее время для прогулки.</string>
+    <!-- Pixel style sky, sun path, wind and air quality -->
+    <string name="solar_arc_title">Путь солнца</string>
+    <string name="wind_compass_title">Ветер</string>
+    <string name="wind_compass_from">Откуда</string>
+    <string name="air_quality_title">Качество воздуха</string>
+    <string name="air_quality_index">AQI</string>
+    <string name="air_quality_summary">Качество воздуха в этом месте — %1$s.</string>
+    <string name="aqi_good">Хорошее</string>
+    <string name="aqi_fair">Приемлемое</string>
+    <string name="aqi_moderate">Умеренное</string>
+    <string name="aqi_poor">Плохое</string>
+    <string name="aqi_unhealthy_sensitive">Вредно для чувствительных групп</string>
+    <string name="aqi_unhealthy">Вредно</string>
+    <string name="aqi_very_poor">Очень плохое</string>
+    <string name="aqi_very_unhealthy">Очень вредно</string>
+    <string name="aqi_extremely_poor">Крайне плохое</string>
+    <string name="aqi_hazardous">Опасное</string>
+    <string name="pollutant_pm25">PM2.5</string>
+    <string name="pollutant_pm10">PM10</string>
+    <string name="pollutant_ozone">Озон</string>
+    <string name="pollutant_no2">NO₂</string>
+    <string name="metric_cloud_cover">Облачность</string>
+    <string name="metric_precipitation_chance">Вероятность дождя</string>
+    <string name="hero_now">Сейчас</string>
+    <string name="hero_updated">Обновлено %1$s</string>
+
+    <!-- Corner styles -->
+    <string name="corner_squircle">Суперквадрат</string>
+    <string name="corner_pilled">Пилюля</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.brahim.meteo.data
 
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
@@ -22,6 +23,9 @@ class MeteoRepository(
 
   fun observeDaily(latitude: Double, longitude: Double): Flow<List<DailyForecast>> =
       database.observeDaily(latitude, longitude)
+
+  fun observeAirQuality(latitude: Double, longitude: Double): Flow<AirQuality?> =
+      database.observeAirQuality(latitude, longitude)
 
   suspend fun findCity(latitude: Double, longitude: Double): City? =
       database.findCity(latitude, longitude)
@@ -49,6 +53,7 @@ class MeteoRepository(
         val payload = api.forecast(latitude, longitude)
         database.replaceHourly(latitude, longitude, payload.hourly)
         database.replaceDaily(latitude, longitude, payload.daily)
+        database.replaceAirQuality(latitude, longitude, payload.airQuality)
         database.saveSyncTime(latitude, longitude, Instant.now())
         true
       } catch (error: CancellationException) {

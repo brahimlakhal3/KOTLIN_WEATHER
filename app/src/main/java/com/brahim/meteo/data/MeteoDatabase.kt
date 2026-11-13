@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import androidx.core.database.sqlite.transaction
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
@@ -31,9 +32,11 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
     db.execSQL(CREATE_HOURLY)
     db.execSQL(CREATE_DAILY)
     db.execSQL(CREATE_SYNC)
+    db.execSQL(CREATE_AIR_QUALITY)
     db.execSQL(CREATE_CITY_INDEX)
     db.execSQL(CREATE_HOURLY_INDEX)
     db.execSQL(CREATE_DAILY_INDEX)
+    db.execSQL(CREATE_AIR_QUALITY_INDEX)
   }
 
   override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -43,6 +46,16 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
     }
     if (oldVersion < 3) {
       dedupeCities(db)
+    }
+    if (oldVersion < 4) {
+      db.execSQL("ALTER TABLE $TABLE_HOURLY ADD COLUMN $COLUMN_CLOUD_COVER REAL")
+      db.execSQL(
+          "ALTER TABLE $TABLE_DAILY ADD COLUMN $COLUMN_PRECIPITATION_PROBABILITY_MAX INTEGER"
+      )
+      db.execSQL("ALTER TABLE $TABLE_DAILY ADD COLUMN $COLUMN_WIND_SPEED_MAX REAL")
+      db.execSQL("ALTER TABLE $TABLE_DAILY ADD COLUMN $COLUMN_WIND_GUST_MAX REAL")
+      db.execSQL(CREATE_AIR_QUALITY)
+      db.execSQL(CREATE_AIR_QUALITY_INDEX)
     }
   }
 
@@ -55,6 +68,9 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
       revision.map { queryDaily(latitude, longitude) }.flowOn(Dispatchers.IO)
 
   fun observeCityCount(): Flow<Int> = revision.map { queryCityCount() }.flowOn(Dispatchers.IO)
+
+  fun observeAirQuality(latitude: Double, longitude: Double): Flow<AirQuality?> =
+      revision.map { queryAirQuality(latitude, longitude) }.flowOn(Dispatchers.IO)
 
   suspend fun findCity(latitude: Double, longitude: Double): City? =
       withContext(Dispatchers.IO) { queryCity(latitude, longitude) }
@@ -149,11 +165,41 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
           items.map { item -> item.toValues(latitude, longitude) },
       )
 
+  suspend fun replaceAirQuality(latitude: Double, longitude: Double, quality: AirQuality?) {
+    if (quality == null) return
+    val values =
+        ContentValues().apply {
+          put(COLUMN_LATITUDE, latitude)
+          put(COLUMN_LONGITUDE, longitude)
+          put(COLUMN_SYNCED_AT, Instant.now().toEpochMilli())
+          put(COLUMN_US_AQI, quality.usAqi)
+          put(COLUMN_EUROPEAN_AQI, quality.europeanAqi)
+          put(COLUMN_PM25, quality.pm25)
+          put(COLUMN_PM10, quality.pm10)
+          put(COLUMN_OZONE, quality.ozone)
+          put(COLUMN_NITROGEN_DIOXIDE, quality.nitrogenDioxide)
+          put(COLUMN_SULPHUR_DIOXIDE, quality.sulphurDioxide)
+          put(COLUMN_CARBON_MONOXIDE, quality.carbonMonoxide)
+        }
+    withContext(Dispatchers.IO) {
+      writableDatabase.transaction {
+        delete(
+            TABLE_AIR_QUALITY,
+            locationSelection,
+            locationArguments(latitude, longitude),
+        )
+        insert(TABLE_AIR_QUALITY, null, values)
+      }
+      notifyChange()
+    }
+  }
+
   suspend fun clearForecast() = withContext(Dispatchers.IO) {
     writableDatabase.transaction {
       delete(TABLE_HOURLY, null, null)
       delete(TABLE_DAILY, null, null)
       delete(TABLE_SYNC, null, null)
+      delete(TABLE_AIR_QUALITY, null, null)
     }
     notifyChange()
   }
@@ -265,6 +311,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
           val visibilityIndex = cursor.getColumnIndexOrThrow(COLUMN_VISIBILITY)
           val dewIndex = cursor.getColumnIndexOrThrow(COLUMN_DEW_POINT)
           val pressureIndex = cursor.getColumnIndexOrThrow(COLUMN_SURFACE_PRESSURE)
+          val cloudIndex = cursor.getColumnIndexOrThrow(COLUMN_CLOUD_COVER)
           while (cursor.moveToNext()) {
             items +=
                 HourlyForecast(
@@ -283,6 +330,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
                     visibility = cursor.nullableDouble(visibilityIndex),
                     dewPoint = cursor.nullableDouble(dewIndex),
                     surfacePressure = cursor.nullableDouble(pressureIndex),
+                    cloudCover = cursor.nullableDouble(cloudIndex),
                 )
           }
         }
@@ -311,6 +359,9 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
           val sunriseIndex = cursor.getColumnIndexOrThrow(COLUMN_SUNRISE)
           val sunsetIndex = cursor.getColumnIndexOrThrow(COLUMN_SUNSET)
           val uvIndex = cursor.getColumnIndexOrThrow(COLUMN_UV_INDEX)
+          val probabilityMaxIndex = cursor.getColumnIndexOrThrow(COLUMN_PRECIPITATION_PROBABILITY_MAX)
+          val windMaxIndex = cursor.getColumnIndexOrThrow(COLUMN_WIND_SPEED_MAX)
+          val gustMaxIndex = cursor.getColumnIndexOrThrow(COLUMN_WIND_GUST_MAX)
           while (cursor.moveToNext()) {
             items +=
                 DailyForecast(
@@ -324,6 +375,9 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
                         cursor.nullableLong(sunriseIndex)?.let { Instant.ofEpochMilli(it) },
                     sunset = cursor.nullableLong(sunsetIndex)?.let { Instant.ofEpochMilli(it) },
                     uvIndexMax = cursor.nullableDouble(uvIndex),
+                    precipitationProbabilityMax = cursor.nullableInt(probabilityMaxIndex),
+                    windSpeedMax = cursor.nullableDouble(windMaxIndex),
+                    windGustMax = cursor.nullableDouble(gustMaxIndex),
                 )
           }
         }
@@ -349,6 +403,7 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
         put(COLUMN_VISIBILITY, visibility)
         put(COLUMN_DEW_POINT, dewPoint)
         put(COLUMN_SURFACE_PRESSURE, surfacePressure)
+        put(COLUMN_CLOUD_COVER, cloudCover)
       }
 
   private fun DailyForecast.toValues(latitude: Double, longitude: Double) =
@@ -364,7 +419,41 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
         put(COLUMN_SUNRISE, sunrise?.toEpochMilli())
         put(COLUMN_SUNSET, sunset?.toEpochMilli())
         put(COLUMN_UV_INDEX, uvIndexMax)
+        put(COLUMN_PRECIPITATION_PROBABILITY_MAX, precipitationProbabilityMax)
+        put(COLUMN_WIND_SPEED_MAX, windSpeedMax)
+        put(COLUMN_WIND_GUST_MAX, windGustMax)
       }
+
+  private fun queryAirQuality(latitude: Double, longitude: Double): AirQuality? {
+    readableDatabase
+        .query(
+            TABLE_AIR_QUALITY,
+            null,
+            locationSelection,
+            locationArguments(latitude, longitude),
+            null,
+            null,
+            null,
+            "1",
+        )
+        .use { cursor ->
+          if (!cursor.moveToFirst()) return null
+          return AirQuality(
+              usAqi = cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_US_AQI)),
+              europeanAqi =
+                  cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_EUROPEAN_AQI)),
+              pm25 = cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_PM25)),
+              pm10 = cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_PM10)),
+              ozone = cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_OZONE)),
+              nitrogenDioxide =
+                  cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_NITROGEN_DIOXIDE)),
+              sulphurDioxide =
+                  cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_SULPHUR_DIOXIDE)),
+              carbonMonoxide =
+                  cursor.nullableDouble(cursor.getColumnIndexOrThrow(COLUMN_CARBON_MONOXIDE)),
+          )
+        }
+  }
 
   private val locationSelection: String = "$COLUMN_LATITUDE = ? AND $COLUMN_LONGITUDE = ?"
 
@@ -428,12 +517,13 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
 
   companion object {
     const val DATABASE_NAME = "meteo.db"
-    private const val VERSION = 3
+    private const val VERSION = 4
 
     private const val TABLE_CITY = "city"
     private const val TABLE_HOURLY = "hourly_forecast"
     private const val TABLE_DAILY = "daily_forecast"
     private const val TABLE_SYNC = "forecast_sync"
+    private const val TABLE_AIR_QUALITY = "air_quality"
 
     private const val COLUMN_ID = "id"
     private const val COLUMN_NAME = "name"
@@ -464,6 +554,18 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
     private const val COLUMN_SUNRISE = "sunrise_epoch"
     private const val COLUMN_SUNSET = "sunset_epoch"
     private const val COLUMN_UV_INDEX = "uv_index_max"
+    private const val COLUMN_CLOUD_COVER = "cloud_cover"
+    private const val COLUMN_PRECIPITATION_PROBABILITY_MAX = "precipitation_probability_max"
+    private const val COLUMN_WIND_SPEED_MAX = "wind_speed_max"
+    private const val COLUMN_WIND_GUST_MAX = "wind_gust_max"
+    private const val COLUMN_US_AQI = "us_aqi"
+    private const val COLUMN_EUROPEAN_AQI = "european_aqi"
+    private const val COLUMN_PM25 = "pm25"
+    private const val COLUMN_PM10 = "pm10"
+    private const val COLUMN_OZONE = "ozone"
+    private const val COLUMN_NITROGEN_DIOXIDE = "nitrogen_dioxide"
+    private const val COLUMN_SULPHUR_DIOXIDE = "sulphur_dioxide"
+    private const val COLUMN_CARBON_MONOXIDE = "carbon_monoxide"
     private const val COLUMN_SYNCED_AT = "synced_at_epoch"
 
     private const val CREATE_CITY =
@@ -495,7 +597,8 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
             "$COLUMN_WIND_DIRECTION INTEGER, " +
             "$COLUMN_VISIBILITY REAL, " +
             "$COLUMN_DEW_POINT REAL, " +
-            "$COLUMN_SURFACE_PRESSURE REAL)"
+            "$COLUMN_SURFACE_PRESSURE REAL, " +
+            "$COLUMN_CLOUD_COVER REAL)"
 
     private const val CREATE_DAILY =
         "CREATE TABLE $TABLE_DAILY (" +
@@ -510,7 +613,10 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
             "$COLUMN_WEATHER_CODE INTEGER NOT NULL, " +
             "$COLUMN_SUNRISE INTEGER, " +
             "$COLUMN_SUNSET INTEGER, " +
-            "$COLUMN_UV_INDEX REAL)"
+            "$COLUMN_UV_INDEX REAL, " +
+            "$COLUMN_PRECIPITATION_PROBABILITY_MAX INTEGER, " +
+            "$COLUMN_WIND_SPEED_MAX REAL, " +
+            "$COLUMN_WIND_GUST_MAX REAL)"
 
     private const val CREATE_SYNC =
         "CREATE TABLE $TABLE_SYNC (" +
@@ -518,6 +624,25 @@ class MeteoDatabase(context: Context, name: String? = DATABASE_NAME) :
             "$COLUMN_LONGITUDE REAL NOT NULL, " +
             "$COLUMN_SYNCED_AT INTEGER NOT NULL, " +
             "PRIMARY KEY ($COLUMN_LATITUDE, $COLUMN_LONGITUDE))"
+
+    private const val CREATE_AIR_QUALITY =
+        "CREATE TABLE $TABLE_AIR_QUALITY (" +
+            "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "$COLUMN_LATITUDE REAL NOT NULL, " +
+            "$COLUMN_LONGITUDE REAL NOT NULL, " +
+            "$COLUMN_SYNCED_AT INTEGER NOT NULL, " +
+            "$COLUMN_US_AQI REAL, " +
+            "$COLUMN_EUROPEAN_AQI REAL, " +
+            "$COLUMN_PM25 REAL, " +
+            "$COLUMN_PM10 REAL, " +
+            "$COLUMN_OZONE REAL, " +
+            "$COLUMN_NITROGEN_DIOXIDE REAL, " +
+            "$COLUMN_SULPHUR_DIOXIDE REAL, " +
+            "$COLUMN_CARBON_MONOXIDE REAL)"
+
+    private const val CREATE_AIR_QUALITY_INDEX =
+        "CREATE UNIQUE INDEX index_air_quality_location ON $TABLE_AIR_QUALITY " +
+            "($COLUMN_LATITUDE, $COLUMN_LONGITUDE)"
 
     private const val CREATE_CITY_INDEX =
         "CREATE UNIQUE INDEX index_city_location ON $TABLE_CITY ($COLUMN_LATITUDE, $COLUMN_LONGITUDE)"

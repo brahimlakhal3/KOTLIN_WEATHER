@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.brahim.meteo.R
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.Place
+import com.brahim.meteo.ui.theme.expressiveShapeFor
 import com.brahim.meteo.util.formatTemperature
 import com.brahim.meteo.util.weatherCondition
 
@@ -62,7 +63,7 @@ fun CityWeatherCard(
       Box(
           modifier =
               Modifier.size(52.dp)
-                  .clip(CircleShape)
+                  .clip(expressiveShapeFor(city.id.toInt()))
                   .background(
                       Brush.linearGradient(
                           listOf(

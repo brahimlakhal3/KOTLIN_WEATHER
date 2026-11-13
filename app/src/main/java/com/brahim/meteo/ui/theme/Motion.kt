@@ -32,6 +32,23 @@ object Motion {
   val gentle: FiniteAnimationSpec<Float> =
       spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
 
+  /** A springy, slightly bouncy spec used for playful affordances such as the compass needle. */
+  val bouncy: FiniteAnimationSpec<Float> =
+      spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium)
+
+  /** A fast, non-bouncy spring used when a value should settle without wobbling. */
+  val crisp: FiniteAnimationSpec<Float> =
+      spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessHigh)
+
+  fun <T> springy(visibilityThreshold: T? = null): SpringSpec<T> =
+      spring(
+          dampingRatio = Spring.DampingRatioMediumBouncy,
+          stiffness = Spring.StiffnessMedium,
+          visibilityThreshold = visibilityThreshold,
+      )
+
+  fun <T> snap(): FiniteAnimationSpec<T> = tween(0)
+
   fun <T> gentleSpring(visibilityThreshold: T? = null): SpringSpec<T> =
       spring(
           dampingRatio = Spring.DampingRatioNoBouncy,
@@ -50,4 +67,8 @@ object Motion {
 
   fun <T> stagger(index: Int, step: Int = 40, durationMillis: Int = MEDIUM_2): FiniteAnimationSpec<T> =
       tween(durationMillis + index * step, easing = emphasizedDecelerate)
+
+  /** A long, linear loop used for ambient motion such as drifting clouds or falling rain. */
+  fun <T> drift(durationMillis: Int = 12_000): FiniteAnimationSpec<T> =
+      tween(durationMillis, easing = androidx.compose.animation.core.LinearEasing)
 }

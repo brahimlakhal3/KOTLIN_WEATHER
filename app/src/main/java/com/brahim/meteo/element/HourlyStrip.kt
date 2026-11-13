@@ -1,5 +1,8 @@
 package com.brahim.meteo.element
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,13 +20,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.brahim.meteo.R
 import com.brahim.meteo.data.model.HourlyForecast
+import com.brahim.meteo.ui.theme.LocalAnimationsEnabled
+import com.brahim.meteo.ui.theme.Motion
+import com.brahim.meteo.ui.theme.expressiveShapeFor
 import com.brahim.meteo.util.formatHour
 import com.brahim.meteo.util.formatTemperature
 
@@ -64,6 +73,16 @@ private fun HourChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+  val animations = LocalAnimationsEnabled.current
+  val interactionSource = remember { MutableInteractionSource() }
+  val pressed by interactionSource.collectIsPressedAsState()
+  val scale by
+      animateFloatAsState(
+          targetValue = if (pressed) PRESSED_SCALE else 1f,
+          animationSpec = if (animations) Motion.press else Motion.snap(),
+          label = "hour_press",
+      )
+
   val (container, content) =
       when {
         isCurrent -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
@@ -81,10 +100,15 @@ private fun HourChip(
 
   Surface(
       onClick = onClick,
-      modifier = modifier,
-      shape = MaterialTheme.shapes.large,
+      modifier =
+          modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+          },
+      shape = if (isCurrent) expressiveShapeFor(index) else expressiveShapeFor(index + 1),
       color = container,
       contentColor = content,
+      interactionSource = interactionSource,
   ) {
     Column(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
@@ -130,3 +154,5 @@ private fun HourChip(
     }
   }
 }
+
+private const val PRESSED_SCALE = 0.94f

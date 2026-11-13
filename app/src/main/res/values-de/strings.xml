@@ -242,4 +242,33 @@
     <string name="advice_hydrate_detail">Gefühlt %1$s. Regelmäßig Wasser trinken.</string>
     <string name="advice_comfort_title">Wetter genießen</string>
     <string name="advice_comfort_detail">Die Bedingungen sind ruhig. Gut für einen Aufenthalt draußen.</string>
+    <!-- Pixel style sky, sun path, wind and air quality -->
+    <string name="solar_arc_title">Sonnenbahn</string>
+    <string name="wind_compass_title">Wind</string>
+    <string name="wind_compass_from">Aus</string>
+    <string name="air_quality_title">Luftqualität</string>
+    <string name="air_quality_index">AQI</string>
+    <string name="air_quality_summary">Die Luftqualität ist für diesen Ort %1$s.</string>
+    <string name="aqi_good">Gut</string>
+    <string name="aqi_fair">Angemessen</string>
+    <string name="aqi_moderate">Mäßig</string>
+    <string name="aqi_poor">Schlecht</string>
+    <string name="aqi_unhealthy_sensitive">Ungesund für empfindliche Gruppen</string>
+    <string name="aqi_unhealthy">Ungesund</string>
+    <string name="aqi_very_poor">Sehr schlecht</string>
+    <string name="aqi_very_unhealthy">Sehr ungesund</string>
+    <string name="aqi_extremely_poor">Extrem schlecht</string>
+    <string name="aqi_hazardous">Gefährlich</string>
+    <string name="pollutant_pm25">PM2.5</string>
+    <string name="pollutant_pm10">PM10</string>
+    <string name="pollutant_ozone">Ozon</string>
+    <string name="pollutant_no2">NO₂</string>
+    <string name="metric_cloud_cover">Bewölkung</string>
+    <string name="metric_precipitation_chance">Regenwahrscheinlichkeit</string>
+    <string name="hero_now">Jetzt</string>
+    <string name="hero_updated">Aktualisiert %1$s</string>
+
+    <!-- Corner styles -->
+    <string name="corner_squircle">Supereck</string>
+    <string name="corner_pilled">Pille</string>
 </resources>

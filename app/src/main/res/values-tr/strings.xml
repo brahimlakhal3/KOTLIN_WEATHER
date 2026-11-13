@@ -242,4 +242,33 @@
     <string name="advice_hydrate_detail">Hissedilen %1$s. Düzenli olarak su için.</string>
     <string name="advice_comfort_title">Havanın tadını çıkarın</string>
     <string name="advice_comfort_detail">Koşullar sakin. Dışarı çıkmak için iyi bir zaman.</string>
+    <!-- Pixel style sky, sun path, wind and air quality -->
+    <string name="solar_arc_title">Güneş yolu</string>
+    <string name="wind_compass_title">Rüzgâr</string>
+    <string name="wind_compass_from">Nereden</string>
+    <string name="air_quality_title">Hava kalitesi</string>
+    <string name="air_quality_index">AQI</string>
+    <string name="air_quality_summary">Bu konum için hava kalitesi %1$s.</string>
+    <string name="aqi_good">İyi</string>
+    <string name="aqi_fair">Kabul edilebilir</string>
+    <string name="aqi_moderate">Orta</string>
+    <string name="aqi_poor">Kötü</string>
+    <string name="aqi_unhealthy_sensitive">Hassas gruplar için sağlıksız</string>
+    <string name="aqi_unhealthy">Sağlıksız</string>
+    <string name="aqi_very_poor">Çok kötü</string>
+    <string name="aqi_very_unhealthy">Çok sağlıksız</string>
+    <string name="aqi_extremely_poor">Aşırı kötü</string>
+    <string name="aqi_hazardous">Tehlikeli</string>
+    <string name="pollutant_pm25">PM2.5</string>
+    <string name="pollutant_pm10">PM10</string>
+    <string name="pollutant_ozone">Ozon</string>
+    <string name="pollutant_no2">NO₂</string>
+    <string name="metric_cloud_cover">Bulutluluk</string>
+    <string name="metric_precipitation_chance">Yağmur olasılığı</string>
+    <string name="hero_now">Şimdi</string>
+    <string name="hero_updated">Güncellendi %1$s</string>
+
+    <!-- Corner styles -->
+    <string name="corner_squircle">Süperkare</string>
+    <string name="corner_pilled">Hap</string>
 </resources>

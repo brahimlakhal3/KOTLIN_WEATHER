@@ -4,13 +4,16 @@
 [![Language](https://img.shields.io/badge/Language-Kotlin_100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![UI](https://img.shields.io/badge/UI-Jetpack_Compose_Expressive-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![API](https://img.shields.io/badge/Data_Provider-Open--Meteo_API-00A8E8?style=for-the-badge)](https://open-meteo.com)
+[![Release](https://img.shields.io/badge/Release-1.1.0-signed-3DDC84?style=for-the-badge)](release/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-**Météo** is a native Android weather app built with **Jetpack Compose** and **Material 3 Expressive**. It combines multi-city forecasts, hourly and daily analytics, local weather alerts, priority-ranked smart advice, sun and moon data, and full offline caching with a highly configurable interface.
+**Météo** is a native Android weather app built with **Jetpack Compose** and **Material 3 Expressive**. It combines multi-city forecasts, hourly and daily analytics, local weather alerts, priority-ranked smart advice, sun and moon data, air quality and full offline caching with a highly configurable interface.
+
+The forecast screen is built around a **living sky**: the whole page takes its colour from the current conditions and animates with them — drifting clouds, falling rain, twinkling stars, a glowing sun or moon — in the style of Google Pixel Weather.
 
 ---
 
-##  Screenshots
+## Screenshots
 
 <p align="center">
   <img src="screenshots/cities_screen.jpg" width="31%" alt="Cities Screen" />
@@ -26,7 +29,25 @@
 
 ---
 
-##  Key Features
+## Key Features
+
+###  Living Sky (Pixel Weather style)
+- The forecast background is a **dynamic gradient** derived from the WMO weather code and the day/night flag, and it **cross-fades** whenever the conditions change.
+- **Ambient particles** react to the sky: drifting clouds, slanting rain, drifting snow, twinkling stars, fog banks and lightning flashes.
+- A **sun or moon glow** breathes behind the forecast header.
+- The sky fades seamlessly into the page background at the top and the bottom, so the gradient never ends on a hard edge.
+- The palette is resolved from the theme accent, so the sky always stays in the family of the chosen colours.
+
+###  Expressive Shapes
+- **15 official Material 3 Expressive silhouettes** (`Cookie4Sided`, `Cookie9Sided`, `Cookie12Sided`, `Gem`, `Boom`, `Arch`, `Pill`, `Flower`, `PixelCircle`, `Puffy`, `Burst`, `ClamShell`, `Sunny`, `Pentagon`, `Triangle`) are used across tiles, badges, city cards and hourly chips.
+- A custom **`SquircleShape`**: a continuous-corner superellipse outline, so surfaces curve out of their own edges instead of being rectangles with cut corners.
+- **5 corner styles**: Expressive, Round, Compact, Squircle and Pilled — each applied to every surface in the app.
+- Shape variety is applied deterministically, so a grid of tiles reads as a family rather than a random mix.
+
+###  Smooth Motion
+- Every motion is driven by a single `Motion` spec set (emphasised decelerate / accelerate, spring, bouncy and drift) and can be switched off globally for motion-sensitive users.
+- **Staggered reveals** for every card, **springing presses** on tappable tiles, **count-up temperatures**, **cross-fading values** and **springing compass needles**.
+- The sun-path marker slides along its arc, the air quality bars grow out of their track and the sky gradient morphs instead of cutting.
 
 ###  Expressive Launch
 - Native Android splash hand-off plus a one-second animated Compose splash using Material 3 Expressive shapes and motion.
@@ -49,10 +70,18 @@
 - Remove cities with a confirmation dialog and undo support.
 
 ###  Expressive Forecasting
-- Seven-day outlook with an hourly breakdown.
-- Interactive metric charts for temperature, precipitation, wind, humidity, pressure, and UV index.
+- **Ten-day** outlook with a 24 hour breakdown.
+- Interactive metric charts for temperature, precipitation, wind, humidity, pressure and UV index.
+- **Sun path arc** that draws the sun travelling between sunrise and sunset with a marker on the current time.
+- **Wind compass** dial that springs to the direction the wind blows from.
 - Dedicated day view with hourly insights and a full metric breakdown.
 - Pull-to-refresh, adaptive flexible app bars, and animated content reveals.
+
+###  Air Quality
+- Current **US AQI** and **European AQI** read from the Open-Meteo air quality endpoint.
+- Six air quality bands, from *Good* to *Hazardous*.
+- Breakdown of **PM2.5, PM10, Ozone and NO₂** with bars that grow into place.
+- The air quality endpoint is optional: if it is unavailable the rest of the forecast still works.
 
 ###  Weather Alerts and Smart Advice
 - Local, forecast-derived warnings for heat, cold, wind, heavy rain, snow, UV, thunderstorms, and fog.
@@ -62,11 +91,12 @@
 
 ###  Astronomy
 - Sun and moon card with sunrise, sunset, daylight duration, moon phase, and illumination.
+- The moon phase is also available as a tile in the conditions grid.
 
 ###  Personalisation Without Losing the Neutral Canvas
 - **6 theme modes**: Auto, Very light, Light, Soft, Dark, and Very dark.
 - **16 accent palettes**: Ocean, Sky, Cyan, Teal, Mint, Emerald, Lime, Sun, Amber, Coral, Rose, Berry, Violet, Indigo, Peach, and Graphite.
-- **3 corner styles** (Expressive, Round, Compact) and **3 text sizes**.
+- **5 corner styles** (Expressive, Round, Compact, Squircle, Pilled) and **3 text sizes**.
 - **Animation toggle** for motion-sensitive users.
 - Background and primary surfaces stay neutral gray while accent colours flow through cards, containers, badges, and gradients.
 
@@ -90,13 +120,13 @@ The app ships with **8 languages**:
 Language changes are applied immediately. Missing translations fall back to English.
 
 ###  Offline Resilience
-- Forecasts and saved cities are cached locally with SQLite.
+- Forecasts, air quality and saved cities are cached locally with SQLite.
 - Cached data is shown instantly and remains available when the network fails.
 - Database migrations preserve saved cities when the schema evolves.
 
 ---
 
-##  Architecture and Project Structure
+## Architecture and Project Structure
 
 Météo follows **MVVM** with **unidirectional data flow** and a single repository-backed data layer.
 
@@ -106,10 +136,10 @@ com.brahim.meteo
 ├── config/             # DataStore keys and configuration persistence
 ├── data/               # Repository, SQLite database, Open-Meteo API client
 │   └── model/          # Domain and API models
-├── element/            # Reusable UI: cards, charts, feature panels, state views
+├── element/            # Reusable UI: cards, charts, feature panels, sky backdrop
 ├── ui/                 # Languages, locale plumbing, location requests and theme
-│   └── theme/          # Material 3 Expressive theme, accents, shapes and type
-├── util/               # Formatting, dates, alerts, advice, city matching, moon phase
+│   └── theme/          # Material 3 Expressive theme, accents, shapes, motion, sky
+├── util/               # Formatting, dates, alerts, advice, city matching, moon phase, AQI
 └── viewModel/          # AppConfig, onboarding, cities, search, forecast, day, settings
 ```
 
@@ -121,7 +151,7 @@ com.brahim.meteo
 
 ---
 
-##  Tech Stack
+## Tech Stack
 
 | Category | Technologies / Libraries |
 | :--- | :--- |
@@ -136,7 +166,7 @@ com.brahim.meteo
 
 ---
 
-##  Getting Started
+## Getting Started
 
 ### Prerequisites
 - **Android Studio** with support for Android Gradle Plugin 9.4.1.
@@ -149,8 +179,8 @@ com.brahim.meteo
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/Weather.git
-   cd Weather
+   git clone https://github.com/brahimlakhal3/KOTLIN_WEATHER.git
+   cd KOTLIN_WEATHER
    ```
 
 2. **Open the project** in Android Studio, or configure `local.properties` with your SDK path.
@@ -171,11 +201,38 @@ com.brahim.meteo
    bash ./gradlew :app:testDebugUnitTest
    ```
 
+### Signed Release Build
+
+The release build is signed with the keystore described in **[SIGNING_INFO.txt](SIGNING_INFO.txt)**.
+
+1. Place the keystore at the path recorded in `SIGNING_INFO.txt` (the repository root).
+2. Create `keystore.properties` in the repository root:
+   ```properties
+   storeFile=meteo-release.jks
+   storePassword=<your store password>
+   keyAlias=meteo
+   keyPassword=<your key password>
+   ```
+   `keystore.properties` and `*.jks` are listed in `.gitignore` and are never committed.
+
+3. Build the signed APK:
+   ```bash
+   bash ./gradlew :app:assembleRelease
+   ```
+   The artifact is written to `app/build/outputs/apk/release/app-release.apk`.
+
+4. Verify the signature:
+   ```bash
+   apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
+   ```
+
+A prebuilt, signed **Météo 1.1.0** APK is published in the [`release/`](release/) folder.
+
 ---
 
-##  Testing
+## Testing
 
-The unit test suite covers utility formatters, date and time formatting, wind direction labels, number formatting, UV index handling, weather condition mapping, weather alerts, priority-ranked smart advice, city proximity matching, and moon phases.
+The unit test suite covers utility formatters, date and time formatting, wind direction labels, number formatting, UV index handling, weather condition mapping, weather alerts, priority-ranked smart advice, city proximity matching, moon phases and air quality bands.
 
 ```bash
 bash ./gradlew :app:testDebugUnitTest --info
@@ -189,17 +246,17 @@ bash ./gradlew :app:compileDebugKotlin :app:assembleDebug
 
 ---
 
-##  Data Attribution
+## Data Attribution
 
-- Weather and geocoding data: [Open-Meteo](https://open-meteo.com).
+- Weather, geocoding and air quality data: [Open-Meteo](https://open-meteo.com).
 - Weather icons: AmCharts and Home Assistant (MIT).
 
 ---
 
-##  License
+## License
 
 ```text
-MIT License
+2026 MIT License
 
 Copyright (c) 2026 Brahim
 

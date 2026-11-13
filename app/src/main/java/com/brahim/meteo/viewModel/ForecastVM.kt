@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.brahim.meteo.MeteoApplication
 import com.brahim.meteo.data.MeteoRepository
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.City
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
@@ -28,6 +29,7 @@ data class ForecastUiState(
     val city: City? = null,
     val hourly: List<HourlyForecast> = emptyList(),
     val daily: List<DailyForecast> = emptyList(),
+    val airQuality: AirQuality? = null,
     val syncedAt: Instant? = null,
     val isSyncing: Boolean = false,
     val hasError: Boolean = false,
@@ -74,17 +76,28 @@ class ForecastVM(
           }
           .stateIn(viewModelScope, SharingStarted.WhileSubscribed(REPLAY_MILLIS), emptyList())
 
+  private val airQualityFlow =
+      repository
+          .observeAirQuality(latitude, longitude)
+          .stateIn(viewModelScope, SharingStarted.WhileSubscribed(REPLAY_MILLIS), null)
+
   val state: StateFlow<ForecastUiState> =
-      combine(city, hourlyFlow, dailyFlow, status) { city, hourly, daily, status ->
-            ForecastUiState(
-                city = city,
-                hourly = hourly,
-                daily = daily,
-                syncedAt = status.syncedAt,
-                isSyncing = status.isSyncing,
-                hasError = status.hasError,
-            )
-          }
+      combine(city, hourlyFlow, dailyFlow, airQualityFlow, status) {
+          city,
+          hourly,
+          daily,
+          airQuality,
+          status ->
+        ForecastUiState(
+            city = city,
+            hourly = hourly,
+            daily = daily,
+            airQuality = airQuality,
+            syncedAt = status.syncedAt,
+            isSyncing = status.isSyncing,
+            hasError = status.hasError,
+        )
+      }
           .stateIn(
               viewModelScope,
               SharingStarted.WhileSubscribed(REPLAY_MILLIS),
@@ -116,7 +129,7 @@ class ForecastVM(
 
   companion object {
     private const val HOURS_SHOWN = 24
-    private const val DAYS_SHOWN = 7
+    private const val DAYS_SHOWN = 10
     private const val SECONDS_PER_HOUR = 3_600L
     private const val STALE_MINUTES = 20L
     private const val REPLAY_MILLIS = 5_000L

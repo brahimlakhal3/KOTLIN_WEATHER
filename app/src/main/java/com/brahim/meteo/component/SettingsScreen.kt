@@ -557,6 +557,8 @@ private val CornerStyle.labelRes: Int
         CornerStyle.EXPRESSIVE -> R.string.corner_expressive
         CornerStyle.ROUND -> R.string.corner_round
         CornerStyle.COMPACT -> R.string.corner_compact
+        CornerStyle.SQUIRCLE -> R.string.corner_squircle
+        CornerStyle.PILLED -> R.string.corner_pilled
       }
 
 private val AccentColor.labelRes: Int

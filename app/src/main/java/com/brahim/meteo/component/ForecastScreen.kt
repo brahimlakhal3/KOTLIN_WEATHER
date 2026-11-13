@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -28,7 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -36,20 +40,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brahim.meteo.R
+import com.brahim.meteo.data.model.AirQuality
 import com.brahim.meteo.data.model.DailyForecast
 import com.brahim.meteo.data.model.HourlyForecast
+import com.brahim.meteo.element.AirQualityCard
+import com.brahim.meteo.element.AppIcon
 import com.brahim.meteo.element.DailyRow
 import com.brahim.meteo.element.DayMetric
+import com.brahim.meteo.element.HeroWeatherCard
 import com.brahim.meteo.element.HourlyStrip
 import com.brahim.meteo.element.LoadingState
+import com.brahim.meteo.element.Metric
 import com.brahim.meteo.element.MetricGrid
 import com.brahim.meteo.element.Reveal
 import com.brahim.meteo.element.SectionHeader
 import com.brahim.meteo.element.SmartAdviceCard
+import com.brahim.meteo.element.SolarArcCard
 import com.brahim.meteo.element.StateMessage
-import com.brahim.meteo.element.SummaryCard
-import com.brahim.meteo.element.SunMoonCard
 import com.brahim.meteo.element.WeatherAlertsCard
+import com.brahim.meteo.element.WeatherBackdrop
+import com.brahim.meteo.element.WindCompassCard
 import com.brahim.meteo.element.weatherMetrics
 import com.brahim.meteo.ui.currentLocale
 import com.brahim.meteo.ui.rememberMinimumLoading
@@ -59,6 +69,7 @@ import com.brahim.meteo.util.formatShort
 import com.brahim.meteo.util.formatSyncTime
 import com.brahim.meteo.util.formatTemperature
 import com.brahim.meteo.util.localDateTime
+import com.brahim.meteo.util.moonInfo
 import com.brahim.meteo.util.weatherAlerts
 import com.brahim.meteo.util.weatherCondition
 import com.brahim.meteo.viewModel.AppConfigVM
@@ -91,79 +102,90 @@ fun ForecastScreen(
   val showAlerts = config?.showAlerts ?: true
   val showLoading = rememberMinimumLoading(state.isLoading)
   val showSyncing = rememberMinimumLoading(state.isSyncing)
+  val current = state.hourly.firstOrNull()
 
   LaunchedEffect(state.hasError) {
     if (state.hasError && state.hasContent) snackbarHostState.showSnackbar(errorMessage)
   }
 
-  Scaffold(
-      modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-      containerColor = MaterialTheme.colorScheme.background,
-      snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-      topBar = {
-        MediumFlexibleTopAppBar(
-            title = {
-              Text(
-                  text = state.city?.name ?: stringResource(R.string.screen_weather),
-                  maxLines = 1,
-              )
-            },
-            subtitle = {
-              state.hourly.firstOrNull()?.let { current ->
+  Box(modifier = modifier.fillMaxSize()) {
+    WeatherBackdrop(
+        weatherCode = current?.weatherCode,
+        isDay = current?.isDay ?: true,
+        backgroundColor = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize(),
+    )
+    Scaffold(
+        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = Color.Transparent,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = {
+          MediumFlexibleTopAppBar(
+              title = {
                 Text(
-                    text =
-                        stringResource(
-                            R.string.hero_feels_like,
-                            formatTemperature(current.apparentTemperature),
-                        ) +
-                            " · " +
-                            stringResource(weatherCondition(current.weatherCode).labelRes),
+                    text = state.city?.name ?: stringResource(R.string.screen_weather),
                     maxLines = 1,
                 )
-              }
-            },
-            navigationIcon = { BackButton(onClick = onBack) },
-            actions = {
-              RefreshButton(isSyncing = showSyncing, onRefresh = viewModel::refresh)
-            },
-            colors = appBarColors(),
-            scrollBehavior = scrollBehavior,
-        )
-      },
-  ) { innerPadding ->
-    when {
-      showLoading ->
-          Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            LoadingState(message = stringResource(R.string.state_loading))
-          }
-      !state.hasContent ->
-          Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            StateMessage(
-                icon = Icons.Outlined.CloudOff,
-                title = stringResource(R.string.state_error_title),
-                message = stringResource(R.string.state_error_hint),
-                action = {
-                  Button(onClick = viewModel::refresh) {
-                    Text(stringResource(R.string.state_retry))
-                  }
-                },
-            )
-          }
-      else ->
-          PullToRefreshBox(
-              isRefreshing = showSyncing,
-              onRefresh = viewModel::refresh,
-              modifier = Modifier.padding(innerPadding).fillMaxSize(),
-          ) {
-            ForecastContent(
-                hourly = state.hourly,
-                daily = state.daily,
-                syncedAt = state.syncedAt,
-                locale = locale,
-                showAlerts = showAlerts,
-                onOpenDay = onOpenDay,
-            )
-          }
+              },
+              subtitle = {
+                current?.let { reading ->
+                  Text(
+                      text =
+                          stringResource(
+                              R.string.hero_feels_like,
+                              formatTemperature(reading.apparentTemperature),
+                          ) +
+                              " · " +
+                              stringResource(weatherCondition(reading.weatherCode).labelRes),
+                      maxLines = 1,
+                  )
+                }
+              },
+              navigationIcon = { BackButton(onClick = onBack) },
+              actions = {
+                RefreshButton(isSyncing = showSyncing, onRefresh = viewModel::refresh)
+              },
+              colors = appBarColors(),
+              scrollBehavior = scrollBehavior,
+          )
+        },
+    ) { innerPadding ->
+      when {
+        showLoading ->
+            Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+              LoadingState(message = stringResource(R.string.state_loading))
+            }
+        !state.hasContent ->
+            Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+              StateMessage(
+                  icon = Icons.Outlined.CloudOff,
+                  title = stringResource(R.string.state_error_title),
+                  message = stringResource(R.string.state_error_hint),
+                  action = {
+                    Button(onClick = viewModel::refresh) {
+                      Text(stringResource(R.string.state_retry))
+                    }
+                  },
+              )
+            }
+        else ->
+            PullToRefreshBox(
+                isRefreshing = showSyncing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.padding(innerPadding).fillMaxSize(),
+            ) {
+              ForecastContent(
+                  hourly = state.hourly,
+                  daily = state.daily,
+                  airQuality = state.airQuality,
+                  cityName = state.city?.name.orEmpty(),
+                  syncedAt = state.syncedAt,
+                  locale = locale,
+                  showAlerts = showAlerts,
+                  onOpenDay = onOpenDay,
+              )
+            }
+      }
     }
   }
 }
@@ -172,6 +194,8 @@ fun ForecastScreen(
 private fun ForecastContent(
     hourly: List<HourlyForecast>,
     daily: List<DailyForecast>,
+    airQuality: AirQuality?,
+    cityName: String,
     syncedAt: Instant?,
     locale: Locale,
     showAlerts: Boolean,
@@ -187,27 +211,22 @@ private fun ForecastContent(
   val todayDate = LocalDate.now(ZoneOffset.ofTotalSeconds(offset))
   val weekLow = daily.mapNotNull { day -> day.temperatureMin }.minOrNull() ?: 0.0
   val weekHigh = daily.mapNotNull { day -> day.temperatureMax }.maxOrNull() ?: 1.0
-  val currentDetails = buildList {
-    add(
+  val highLow =
+      if (today?.temperatureMax != null && today.temperatureMin != null) {
         stringResource(
-            R.string.hero_feels_like,
-            formatTemperature(current.apparentTemperature),
+            R.string.city_high_low,
+            formatTemperature(today.temperatureMax),
+            formatTemperature(today.temperatureMin),
         )
-    )
-    if (today?.temperatureMax != null && today.temperatureMin != null) {
-      add(
-          stringResource(
-              R.string.day_min_max,
-              formatTemperature(today.temperatureMax),
-              formatTemperature(today.temperatureMin),
-          )
-      )
-    }
-    add(stringResource(weatherCondition(current.weatherCode).labelRes))
-  }
-  val currentTemperature = formatTemperature(current.temperature)
-  val currentTime = formatHour(current.time, current.utcOffsetSeconds)
+      } else null
+  val feelsLike =
+      current.apparentTemperature?.let { value ->
+        stringResource(R.string.hero_feels_like, formatTemperature(value))
+      }
   val alerts = if (showAlerts) weatherAlerts(hourly, daily) else emptyList()
+  val moon = today?.date?.let { date -> moonInfo(date) }
+  val moonValue = moon?.let { info -> stringResource(info.phase.labelRes) }
+  val moonCaption = moon?.let { info -> stringResource(R.string.moon_illumination, info.illumination) }
 
   LazyColumn(
       modifier = Modifier.fillMaxSize(),
@@ -216,13 +235,15 @@ private fun ForecastContent(
   ) {
     item {
       Reveal(index = 0, modifier = Modifier.padding(horizontal = 12.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-          SummaryCard(
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          HeroWeatherCard(
               weatherCode = current.weatherCode,
               isDay = current.isDay,
-              temperature = currentTemperature,
-              details = currentDetails,
-              trailing = currentTime,
+              temperature = current.temperature,
+              condition = stringResource(weatherCondition(current.weatherCode).labelRes),
+              location = cityName.ifBlank { formatHour(current.time, current.utcOffsetSeconds) },
+              highLow = highLow,
+              feelsLike = feelsLike,
           )
           Text(
               text = syncLabel,
@@ -248,7 +269,23 @@ private fun ForecastContent(
     }
     item {
       Reveal(index = 3, modifier = Modifier.padding(horizontal = 12.dp)) {
-        SunMoonCard(day = today)
+        SolarArcCard(day = today)
+      }
+    }
+    item {
+      Reveal(index = 4, modifier = Modifier.padding(horizontal = 12.dp)) {
+        WindCompassCard(
+            directionDegrees = current.windDirection,
+            speed = current.windSpeed,
+            gust = current.windGust,
+        )
+      }
+    }
+    if (airQuality != null && !airQuality.isEmpty) {
+      item {
+        Reveal(index = 5, modifier = Modifier.padding(horizontal = 12.dp)) {
+          AirQualityCard(quality = airQuality)
+        }
       }
     }
     item {
@@ -290,8 +327,20 @@ private fun ForecastContent(
       )
     }
     item {
+      val metrics = weatherMetrics(hours = listOf(current), day = today, mean = false)
       MetricGrid(
-          metrics = weatherMetrics(hours = listOf(current), day = today, mean = false),
+          metrics =
+              if (moonValue != null) {
+                metrics +
+                    Metric(
+                        icon = AppIcon.Vector(Icons.Outlined.DarkMode),
+                        label = stringResource(R.string.moon_phase),
+                        value = moonValue,
+                        caption = moonCaption,
+                    )
+              } else {
+                metrics
+              },
           onMetricClick = { metric ->
             onOpenDay(epochDayOf(current), metric.dayMetric ?: DayMetric.TEMPERATURE)
           },

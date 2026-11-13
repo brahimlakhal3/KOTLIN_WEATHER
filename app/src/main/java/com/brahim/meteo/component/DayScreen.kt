@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -53,10 +54,12 @@ import com.brahim.meteo.element.MetricGrid
 import com.brahim.meteo.element.IconView
 import com.brahim.meteo.element.Reveal
 import com.brahim.meteo.element.SummaryCard
+import com.brahim.meteo.element.SolarArcCard
 import com.brahim.meteo.element.SunMoonCard
 import com.brahim.meteo.element.read
 import com.brahim.meteo.element.sunTimes
 import com.brahim.meteo.element.text
+import com.brahim.meteo.element.WeatherBackdrop
 import com.brahim.meteo.element.weatherMetrics
 import com.brahim.meteo.ui.currentLocale
 import com.brahim.meteo.ui.rememberMinimumLoading
@@ -129,30 +132,37 @@ fun DayScreen(
           " " +
           uvIndexText(day?.uvIndexMax, locale)
 
-  Scaffold(
-      modifier = modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-      containerColor = MaterialTheme.colorScheme.background,
-      topBar = {
-        MediumFlexibleTopAppBar(
-            title = { Text(text = label, maxLines = 1) },
-            subtitle = {
-              Text(
-                  text = dayDate.ifBlank { stringResource(R.string.screen_weather) },
-                  style = MaterialTheme.typography.bodyMedium,
-              )
-            },
-            navigationIcon = { BackButton(onClick = onBack) },
-            colors = appBarColors(),
-            scrollBehavior = scrollBehavior,
-        )
-      },
-  ) { innerPadding ->
-    if (showLoading) {
-      Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-        LoadingState(message = stringResource(R.string.state_loading))
+  Box(modifier = modifier.fillMaxSize()) {
+    WeatherBackdrop(
+        weatherCode = day?.weatherCode,
+        isDay = true,
+        backgroundColor = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize(),
+    )
+    Scaffold(
+        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = Color.Transparent,
+        topBar = {
+          MediumFlexibleTopAppBar(
+              title = { Text(text = label, maxLines = 1) },
+              subtitle = {
+                Text(
+                    text = dayDate.ifBlank { stringResource(R.string.screen_weather) },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+              },
+              navigationIcon = { BackButton(onClick = onBack) },
+              colors = appBarColors(),
+              scrollBehavior = scrollBehavior,
+          )
+        },
+    ) { innerPadding ->
+      if (showLoading) {
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+          LoadingState(message = stringResource(R.string.state_loading))
+        }
+        return@Scaffold
       }
-      return@Scaffold
-    }
 
     LazyColumn(
         modifier = Modifier.padding(innerPadding).fillMaxSize(),
@@ -196,6 +206,11 @@ fun DayScreen(
       }
       item {
         Reveal(index = 1, modifier = Modifier.padding(horizontal = 12.dp)) {
+          SolarArcCard(day = day)
+        }
+      }
+      item {
+        Reveal(index = 2, modifier = Modifier.padding(horizontal = 12.dp)) {
           SunMoonCard(day = day)
         }
       }
@@ -235,6 +250,7 @@ fun DayScreen(
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         )
       }
+    }
     }
   }
 }

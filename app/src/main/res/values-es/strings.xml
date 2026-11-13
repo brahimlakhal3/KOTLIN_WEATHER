@@ -242,4 +242,33 @@
     <string name="advice_hydrate_detail">Sensación de %1$s. Bebe agua con regularidad.</string>
     <string name="advice_comfort_title">Disfruta del tiempo</string>
     <string name="advice_comfort_detail">Las condiciones son tranquilas. Buen momento para salir.</string>
+    <!-- Pixel style sky, sun path, wind and air quality -->
+    <string name="solar_arc_title">Trayectoria solar</string>
+    <string name="wind_compass_title">Viento</string>
+    <string name="wind_compass_from">Desde</string>
+    <string name="air_quality_title">Calidad del aire</string>
+    <string name="air_quality_index">AQI</string>
+    <string name="air_quality_summary">La calidad del aire es %1$s en esta ubicación.</string>
+    <string name="aqi_good">Buena</string>
+    <string name="aqi_fair">Aceptable</string>
+    <string name="aqi_moderate">Moderada</string>
+    <string name="aqi_poor">Mala</string>
+    <string name="aqi_unhealthy_sensitive">Insalubre para grupos sensibles</string>
+    <string name="aqi_unhealthy">Insalubre</string>
+    <string name="aqi_very_poor">Muy mala</string>
+    <string name="aqi_very_unhealthy">Muy insalubre</string>
+    <string name="aqi_extremely_poor">Extremadamente mala</string>
+    <string name="aqi_hazardous">Peligrosa</string>
+    <string name="pollutant_pm25">PM2.5</string>
+    <string name="pollutant_pm10">PM10</string>
+    <string name="pollutant_ozone">Ozono</string>
+    <string name="pollutant_no2">NO₂</string>
+    <string name="metric_cloud_cover">Nubosidad</string>
+    <string name="metric_precipitation_chance">Probabilidad de lluvia</string>
+    <string name="hero_now">Ahora</string>
+    <string name="hero_updated">Actualizado %1$s</string>
+
+    <!-- Corner styles -->
+    <string name="corner_squircle">Cuadrado redondeado</string>
+    <string name="corner_pilled">Píldora</string>
 </resources>

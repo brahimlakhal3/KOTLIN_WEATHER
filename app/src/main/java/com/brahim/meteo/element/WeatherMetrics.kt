@@ -2,6 +2,7 @@ package com.brahim.meteo.element
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Air
+import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Umbrella
 import androidx.compose.material.icons.outlined.WaterDrop
@@ -104,6 +105,11 @@ fun weatherMetrics(
           label = stringResource(R.string.metric_uv_index),
           value = uvIndexText(day?.uvIndexMax, locale),
           caption = if (mean) maxCaption else null,
+      ),
+      Metric(
+          icon = AppIcon.Vector(Icons.Outlined.Cloud),
+          label = stringResource(R.string.metric_cloud_cover),
+          value = percent(value { hour -> hour.cloudCover }),
       ),
   )
 }
